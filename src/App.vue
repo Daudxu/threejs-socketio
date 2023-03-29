@@ -5,7 +5,7 @@
       <button @click="confirmClick">确认</button>
     </div>
     <div v-else style="width: 100%;height: 100%;"
-         id="container">
+         id="container" ref="container">
     </div>
   </div>
 </template>
@@ -19,6 +19,8 @@ import { onMounted, ref } from "vue"
 const socket = io('http://localhost:3000');
 const hideCanvas = ref(true)
 const name = ref()
+const hotZoneData = ref(null)
+const container = ref()
 
 
 onMounted(() => {
@@ -46,15 +48,17 @@ const socketIo = () => {
 }
 
 const initThree = () => {
-    container = document.getElementById('container')
+    // container = document.getElementById('container')
+    let containerObj = container.value
+    console.log('containerObj', containerObj)
     let config={
-      playerName:this.name,
+      playerName:name,
       socket:socket,
-      hotZoneData:this.hotZoneData
+      hotZoneData:hotZoneData
     }
-    if (container) {
+    if (containerObj) {
       renderAPI()
-        .initialize(container,config)
+        .initialize(containerObj,config)
         .then((apiInstance) => {
           apiInstance.startRender();
         })
