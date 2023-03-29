@@ -1,111 +1,75 @@
 <template>
-  <div id="container"></div>
+  <div id="blocker" style="width:100%;height: 100%;">
+    <div v-if="hideCanvas" style="width:100%;height: 100%;background-color: black">
+      <input v-model="name"/>
+      <button @click="confirmClick">确认</button>
+    </div>
+    <div v-else style="width: 100%;height: 100%;"
+         id="container">
+    </div>
+  </div>
 </template>
 
 <script setup>
 import * as THREE from "three";
-import Stats from "three/examples/jsm/libs/stats.module.js";
+import { renderAPI } from "./lib/renderAPI";
+import io from 'socket.io-client'
+import { onMounted, ref } from "vue"
 
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+const socket = io('http://localhost:3000');
+const hideCanvas = ref(true)
+const name = ref()
 
-import { Octree } from "three/examples/jsm/math/Octree.js";
-import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper.js";
-
-import { Capsule } from "three/examples/jsm/math/Capsule.js";
-
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
-
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-import { reactive, onMounted, ref } from "vue";
-
-import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 onMounted(() => {
-  const clock = new THREE.Clock();
-
-  const scene = new THREE.Scene();
-
-  scene.background = new THREE.Color(0x88ccee);
-  // scene.fog = new THREE.Fog(0x88ccee, 0, 50);
-
-  const camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.001,
-    1000
-  );
-  camera.position.set(0, 5, 10);
-
-  const container = document.getElementById("container");
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.VSMShadowMap;
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  container.appendChild(renderer.domElement);
-
-  const stats = new Stats();
-  stats.domElement.style.position = "absolute";
-  stats.domElement.style.top = "0px";
-  container.appendChild(stats.domElement);
-
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 0, 0);
-
-  console.log(renderer.info);
-
-
-  function animate() {
-    let delta = clock.getDelta();
-
-    stats.update();
-    controls.update();
-    cubeCamera.update(renderer, scene);
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-  }
-
-  const hdrLoader = new RGBELoader();
-  hdrLoader.load("./hdr/023.hdr", (texture) => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    texture.format = THREE.RGBAFormat;
-    scene.background = texture;
-    scene.environment = texture;
-    sphereMaterial.envMap = cubeRenderTarget.texture;
-  });
-
-  // 创建球
-  const sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
-  const sphereMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
-    // 透光程度
-    transparent: true,
-    roughness: 0,
-    metalness: 1,
-  });
-  sphereMaterial._iridescence = 1;
-  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  sphere.position.set(0, 0, 0);
-  scene.add(sphere);
-
-  const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-  const boxMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff
+  window.addEventListener('DOMContentLoaded', function () {
+    socketIo()
   })
-  const box = new THREE.Mesh(boxGeometry, boxMaterial)
-  box.position.set(3, 0, 0)
-  scene.add(box)
-
-  // 创建 cubeTarget
-  const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(512);
-  const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
-  animate();
 });
+
+const initData = () => {
+  // let that=this
+  // this.$axios.get('http://localhost:3000/hotZone').then(function (response) {
+  //   console.log(response);
+  //   that.hotZoneData=response.data
+  // }).catch(function (error) {
+  //   console.log(error);
+  // });
+}
+
+const socketIo = () => {
+    socket.on('connect',function(){
+      console.log('连接成功');
+      //客户端连接成功后发送消息'welcome'
+      // socket.send('welcome');
+    });
+}
+
+const initThree = () => {
+    container = document.getElementById('container')
+    let config={
+      playerName:this.name,
+      socket:socket,
+      hotZoneData:this.hotZoneData
+    }
+    if (container) {
+      renderAPI()
+        .initialize(container,config)
+        .then((apiInstance) => {
+          apiInstance.startRender();
+        })
+        .catch();
+    }
+}
+
+const confirmClick = () => {
+  hideCanvas.value = false
+  initData()
+  setTimeout(()=>{
+    initThree()
+  },100)
+  // $forceUpdate()
+}
 </script>
 
 <style>
