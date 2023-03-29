@@ -1,0 +1,19 @@
+{
+  "name": "threejs-socketio",
+  "version": "1.0.0",
+  "description": "threejs-socketio",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "serve": "node server.js",
+    "dev": "node server.js",
+    "test": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  }
+}
