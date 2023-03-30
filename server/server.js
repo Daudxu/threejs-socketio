@@ -11,32 +11,34 @@ var io = new Server(server,{ cors: true });
 const cors = require('cors');
 app.use(cors());
 const port = 3000;
+const users = {};
+
+// io.on('conenct', function(socket){
+//     console.log('conenct',socket.id);
+// });
 
 io.on('connection', async (socket) => {
-    // console.log('a user connected'+socket);
     var total = io.engine.clientsCount;
-    var allClients = await io.allSockets();
-    // console.log('allClients:' + allClients);
-    // logger.info('allClients:' +allClients);
-    socket.on('connectedUser', (users) =>{
-        socket.name = users;
-        socket.emit('connectedUser', users);
-        // console.log(users + ' has joined the chat.');
-    })
+    console.log('服务器连接成功ID:', socket.id);
+    users[socket.id] = socket.id;
 
-    socket.on('disconnect',function (data) {
-        // console.log('data', data)
-        // logger.info(data);
-        console.log('断开统计在线客户端数量', total);
-        logger.info('断开统计在线客户端数量:' +total);
-        socket.broadcast.emit('message', data);
+    logger.info(total);
+    socket.on('disconnect',function () {
+        // console.log('断开统计在线客户端数量', total);
+        console.log('断开统计在线客户端ID', socket.id);
+        // console.log(socket.id); 
+        // logger.info('断开统计在线客户端数量:' +total);
+        // socket.broadcast.emit('message', data);
+        delete users[socket.id];
     })
     socket.on('message',function (data) {
-        console.log('创建角色成功统计在线客户端数量', total);
+        // console.log('创建角色成功统计在线客户端数量', total);
         // logger.info('创建角色在线客户端数量:' +total);
         socket.broadcast.emit('message', data);
+        
     })
 });
+
 
 app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
