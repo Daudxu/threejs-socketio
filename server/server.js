@@ -2,22 +2,43 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
+var log4js = require('log4js');
+log4js.configure('./log4js.json');
+var logger = require('log4js').getLogger("index");
+
 const { Server } = require("socket.io");
 var io = new Server(server,{ cors: true });
 const cors = require('cors');
 app.use(cors());
 const port = 3000;
 
-io.on('connection', (socket) => {
-    console.log('a user connected'+socket);
+io.on('connection', async (socket) => {
+    // console.log('a user connected'+socket);
+    var total = io.engine.clientsCount;
+    var allClients = await io.allSockets();
+    // console.log('allClients:' + allClients);
+    // logger.info('allClients:' +allClients);
+    socket.on('connectedUser', (users) =>{
+        socket.name = users;
+        socket.emit('connectedUser', users);
+        // console.log(users + ' has joined the chat.');
+    })
+
     socket.on('disconnect',function (data) {
         // console.log('data', data)
-        console.log('断开')
+        // logger.info(data);
+        console.log('断开统计在线客户端数量', total);
+        logger.info('断开统计在线客户端数量:' +total);
+        socket.broadcast.emit('message', data);
     })
     socket.on('message',function (data) {
+        console.log('创建角色成功统计在线客户端数量', total);
+        // logger.info('创建角色在线客户端数量:' +total);
         socket.broadcast.emit('message', data);
     })
 });
+
+app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
 //设置跨域访问
 app.all('*', function (req, res, next) {
