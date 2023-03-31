@@ -287,10 +287,9 @@ export default class PlayerController {
           let model = SkeletonUtils.clone(this.player.scene)
           model.name = message.id
           let mixer = new THREE.AnimationMixer(model)
-          console.log(mixer)
-          walking = mixer.clipAction(this.player.animations[0])
-          idle = mixer.clipAction(this.player.animations[1])
-          run = mixer.clipAction(this.player.animations[2])
+          walking = mixer.clipAction(this.player.animations[10])
+          idle = mixer.clipAction(this.player.animations[2])
+          run = mixer.clipAction(this.player.animations[6])
           let obj={
             name:message.id,
             action : {

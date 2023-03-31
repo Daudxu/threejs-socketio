@@ -1,12 +1,9 @@
 <template>
-  <div id="blocker" style="width:100%;height: 100%;">
-    <div v-if="hideCanvas" style="width:100%;height: 100%;background-color: black">
-      <input v-model="name"/>
-      <button @click="confirmClick">确认</button>
-    </div>
-    <div v-else style="width: 100%;height: 100%;"
-         id="container" ref="container">
-    </div>
+  <div class="cl-create-avatar">
+    <input v-model="name"/>
+    <button @click="handleClickCreateAvatar">创建角色</button>
+  </div>
+  <div id="container" class="container" ref="container">
   </div>
 </template>
 
@@ -17,42 +14,31 @@ import io from 'socket.io-client'
 import { onMounted, ref } from "vue"
 
 const socket = io('http://localhost:3000');
-const hideCanvas = ref(true)
 const name = ref()
 const hotZoneData = ref(null)
 const container = ref()
 
-
 onMounted(() => {
-  window.addEventListener('DOMContentLoaded', function () {
-    socketIo()
-  })
+  // window.addEventListener('DOMContentLoaded', function () {
+  //   socketIo()
+  // })
 });
 
-const initData = () => {
-  // let that=this
-  // this.$axios.get('http://localhost:3000/hotZone').then(function (response) {
-  //   console.log(response);
-  //   that.hotZoneData=response.data
-  // }).catch(function (error) {
-  //   console.log(error);
-  // });
+const handleClickCreateAvatar = async () => {
+    await connectSocket()
+    initThree(socket)
 }
-
-const socketIo = () => {
+// 连接到webSocket
+const connectSocket = () => {
     socket.on('connect',function(){
       console.log('连接成功');
-      //客户端连接成功后发送消息'welcome'
-      // socket.send('welcome');
+      socket.send('welcome');
     });
 }
-
-const initThree = () => {
-    // container = document.getElementById('container')
-    let containerObj = container.value
-    console.log('containerObj', containerObj)
+const initThree = (socket) => {
+    const containerObj = container.value
     let config={
-      playerName:name,
+      playerName:name.value,
       socket:socket,
       hotZoneData:hotZoneData
     }
@@ -66,17 +52,17 @@ const initThree = () => {
     }
 }
 
-const confirmClick = () => {
-  hideCanvas.value = false
-  initData()
-  setTimeout(()=>{
-    initThree()
-  },100)
-  // $forceUpdate()
-}
 </script>
 
 <style>
+.cl-create-avatar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #000000;
+  z-index: 999;
+}
+
 * { 
   margin: 0;
   padding: 0;

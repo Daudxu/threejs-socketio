@@ -35,7 +35,6 @@ io.on('connection', async (socket) => {
         // console.log('创建角色成功统计在线客户端数量', total);
         // logger.info('创建角色在线客户端数量:' +total);
         socket.broadcast.emit('message', data);
-        
     })
 });
 
