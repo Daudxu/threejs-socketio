@@ -58,7 +58,7 @@ export default class PlayerController {
     that.socketMessage()
     that.initCSS2DRenderer()
   }
-
+  
   //挂载传入角色与响应动画
   initPlayer() {
     let model = SkeletonUtils.clone(this.player.scene)
@@ -82,13 +82,19 @@ export default class PlayerController {
 
     this.create2DObject(model.name,player)
   }
-  create2DObject(name,model){
-    const moonDiv = document.createElement( 'div' );
-    moonDiv.className = 'label';
-    moonDiv.textContent = name;
-    moonDiv.style.marginTop = '-1em';
-    const moonLabel = new CSS2DObject( moonDiv );
-    moonLabel.position.set( 0, 0.3, 0 );
+  create2DObject(name,model, type = 'create'){
+    const labelDiv = document.createElement( 'div' );
+    labelDiv.className = 'cl-label';
+    labelDiv.textContent = name;
+    labelDiv.style.marginTop = '1em';
+    const moonLabel = new CSS2DObject( labelDiv );
+    if(type === 'create') {
+      moonLabel.position.set( 0, 0.5, 0 );
+    }else{
+      moonLabel.position.set( 0, 2.5, 0 );
+    }
+
+    // console.log(model.size())
     model.add( moonLabel );
     moonLabel.layers.set( 0 );
   }
@@ -118,8 +124,8 @@ export default class PlayerController {
     ev.preventDefault()
     let getBoundingClientRect = container.getBoundingClientRect()
     // 屏幕坐标转标准设备坐标
-    let x = ((event.clientX - getBoundingClientRect.left) / container.offsetWidth) * 2 - 1// 标准设备横坐标
-    let y = -((event.clientY - getBoundingClientRect.top) / container.offsetHeight) * 2 + 1// 标准设备纵坐标
+    let x = ((ev.clientX - getBoundingClientRect.left) / container.offsetWidth) * 2 - 1// 标准设备横坐标
+    let y = -((ev.clientY - getBoundingClientRect.top) / container.offsetHeight) * 2 + 1// 标准设备纵坐标
     let standardVector = new THREE.Vector3(x, y, 1)// 标准设备坐标
     // 标准设备坐标转世界坐标
     let worldVector = standardVector.unproject(this.camera)
@@ -134,11 +140,17 @@ export default class PlayerController {
       // console.log(intersects)
       if (intersects[0].object.name == "Plane") {
         let targetVec = intersects[0].point
+
         ball = targetVec.clone()
+
         distVec = ball.distanceTo(player.position)
-        targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
-      
-        // console.log(ball)
+        const  ball1 = targetVec.clone()
+        // const  direction = ball1.sub(player.position).normalize();  
+        // return false
+        // targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
+        // player.lookAt(direction)
+        // player.lookAt(ball.x, 0,  ball.z)
+        // console.log(targetVec)
         // action.idle.stop()
         // action.run.play()
         // this.playerAnimationsState = "run"
@@ -188,7 +200,6 @@ export default class PlayerController {
 
       // this.scene.environment = pmremGenerator.fromScene( sky ).texture;
     }
-
     updateSun();
   }
 
@@ -226,7 +237,10 @@ export default class PlayerController {
     if (distVec > 0) {
       distVec -= 0.08;
       player.translateOnAxis(targetVecNorm, 0.08);
+      console.log("targetVecNorm", targetVecNorm.x)
+      // player.lookAt(targetVecNorm.x, 0, targetVecNorm.y)
       player.rotation.z = 0
+
     }
     if (distVec == 0 || distVec < 0) {
       // action.run.stop()
@@ -237,14 +251,15 @@ export default class PlayerController {
 
   //相机旋转
   roleRotation() {
-    console.log(this.scene)
+    // console.log(this.scene)
     let actor = this.scene.getObjectByName("Actor")
     let playerNode = this.scene.getObjectByName('playerNode')
     //旋转
     if (distVec > 0.05) {
       playerNode.lookAt(ball.x, 0, ball.z)
       let playerNodeClone = playerNode.quaternion.clone()
-      // actor.quaternion.slerp(playerNodeClone, 0.1)
+      actor.rotateY =   Math.PI
+      actor.quaternion.slerp(playerNodeClone, 0.1)
     }
   }
 
@@ -274,22 +289,22 @@ export default class PlayerController {
           if (message.playerQuaternion) {
             model.quaternion.set(message.playerQuaternion._x,message.playerQuaternion._y,message.playerQuaternion._z,message.playerQuaternion._w)
           }
-      if(this.playerAnimationsArr.length>0){
-        this.playerAnimationsArr.forEach(item=>{
-          if(item.name==model.name){
-            switch (message.state) {
-              // case "idle":
-              //   item.action.run.stop()
-              //   item.action.idle.play()
-              //   break
-              // case "run":
-              //   item.action.idle.stop()
-              //   item.action.run.play()
-              //   break
-            }
+          if(this.playerAnimationsArr.length>0){
+            this.playerAnimationsArr.forEach(item=>{
+              if(item.name==model.name){
+                switch (message.state) {
+                  // case "idle":
+                  //   item.action.run.stop()
+                  //   item.action.idle.play()
+                  //   break
+                  // case "run":
+                  //   item.action.idle.stop()
+                  //   item.action.run.play()
+                  //   break
+                }
+              }
+            })
           }
-        })
-      }
         } else {
           let model = SkeletonUtils.clone(this.player.scene)
           model.name = message.id
@@ -306,13 +321,16 @@ export default class PlayerController {
           //   }
           // }
           // this.playerAnimationsArr.push(obj)
+          this.create2DObject(message.id, model, 'update')
           this.scene.add(model)
-          this.create2DObject(message.id,model)
           // mixers.push(mixer)
         }
       }
     });
   }
+
+  // 创建传送点
+  
 
   update=()=> {
     const delta = clock.getDelta();
