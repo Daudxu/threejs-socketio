@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import {Sky} from 'three/examples/jsm/objects/Sky'
-import {OBB} from 'three/examples/jsm/math/OBB'
+import { Sky } from 'three/examples/jsm/objects/Sky'
+import { OBB } from 'three/examples/jsm/math/OBB'
 
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -64,6 +64,7 @@ export default class PlayerController {
     let model = SkeletonUtils.clone(this.player.scene)
     const mixer = new THREE.AnimationMixer(model)
     console.log('this.player.animations', this.player.animations)
+
     // let walking = mixer.clipAction(this.player.animations[10])
     // let idle = mixer.clipAction(this.player.animations[2])
     // let run = mixer.clipAction(this.player.animations[6])
@@ -136,13 +137,15 @@ export default class PlayerController {
         ball = targetVec.clone()
         distVec = ball.distanceTo(player.position)
         targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
+      
+        // console.log(ball)
         // action.idle.stop()
         // action.run.play()
         // this.playerAnimationsState = "run"
       }
     }
   }
-
+  // 创建
   createCameras() {
     let childNode = new THREE.Object3D()
     let playerNode = childNode.clone()
@@ -151,7 +154,7 @@ export default class PlayerController {
     player.add(playerNode)
   }
 
-  //天空盒
+  // 创建天空环境
   initSky() {
     const sky = new Sky()
     sky.scale.setScalar(10000)
@@ -159,22 +162,22 @@ export default class PlayerController {
     this.scene.add(sky)
 
     const skyUniforms = sky.material.uniforms;
-
+    
     skyUniforms['turbidity'].value = 10;
     skyUniforms['rayleigh'].value = 2;
     skyUniforms['mieCoefficient'].value = 0.005;
     skyUniforms['mieDirectionalG'].value = 0.8;
-
+    
     const parameters = {
       elevation: 2,
       azimuth: 180
     };
-    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
-
+    // const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    
     let sun = new THREE.Vector3();
-
+    
     function updateSun() {
-
+    
       const phi = THREE.MathUtils.degToRad(90 - parameters.elevation);
       const theta = THREE.MathUtils.degToRad(parameters.azimuth);
 
@@ -204,9 +207,9 @@ export default class PlayerController {
     this.stateInt = state
   }
 
+   //鼠标右键控制旋转相机
   thirdPersonCameraControl() {
     let playerNode = this.scene.getObjectByName("playerNode")
-    //鼠标右键控制旋转相机
     if (playerNode) {
       let positonCopy = playerNode.getWorldPosition(new THREE.Vector3())
       this.radius = 7
@@ -234,6 +237,7 @@ export default class PlayerController {
 
   //相机旋转
   roleRotation() {
+    console.log(this.scene)
     let actor = this.scene.getObjectByName("Actor")
     let playerNode = this.scene.getObjectByName('playerNode')
     //旋转
@@ -246,6 +250,7 @@ export default class PlayerController {
 
 
   selectController(delta) {
+    // console.log(delta)
     switch (this.stateInt) {
       case 0:
         //点击地面移动
@@ -300,7 +305,7 @@ export default class PlayerController {
           //     run: run
           //   }
           // }
-          this.playerAnimationsArr.push(obj)
+          // this.playerAnimationsArr.push(obj)
           this.scene.add(model)
           this.create2DObject(message.id,model)
           // mixers.push(mixer)

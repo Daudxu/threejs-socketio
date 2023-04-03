@@ -48,9 +48,11 @@ export default class ModuleMain extends BaseMain {
   }
 
   initAnimate = () => {
-    requestAnimationFrame(this.initAnimate); //请求再次执行渲染函数render
-    this.render.renderer.render(this.baseScene.scene, this.baseCamera.camera);//执行渲染操作
+    // 执行渲染操作
+    this.render.renderer.render(this.baseScene.scene, this.baseCamera.camera);
     this.controlRole?.update()
+    // requestAnimationFrame
+    requestAnimationFrame(this.initAnimate); 
 
   }
 }
