@@ -9,7 +9,7 @@ export default class BaseCamera {
     this.initCamera();
     // this.cameraControls(this.renderer)/
   }
-
+  
   /**
    * 初始化场景
    */
