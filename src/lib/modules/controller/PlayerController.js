@@ -144,13 +144,12 @@ export default class PlayerController {
         ball = targetVec.clone()
 
         distVec = ball.distanceTo(player.position)
-        const  ball1 = targetVec.clone()
+        // const  ball1 = targetVec.clone()
         // const  direction = ball1.sub(player.position).normalize();  
         // return false
-        // targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
+        targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
+        console.log("player", player)
         // player.lookAt(direction)
-        // player.lookAt(ball.x, 0,  ball.z)
-        // console.log(targetVec)
         // action.idle.stop()
         // action.run.play()
         // this.playerAnimationsState = "run"
@@ -237,10 +236,7 @@ export default class PlayerController {
     if (distVec > 0) {
       distVec -= 0.08;
       player.translateOnAxis(targetVecNorm, 0.08);
-      console.log("targetVecNorm", targetVecNorm.x)
-      // player.lookAt(targetVecNorm.x, 0, targetVecNorm.y)
-      player.rotation.z = 0
-
+      // player.rotation.z = 0
     }
     if (distVec == 0 || distVec < 0) {
       // action.run.stop()
@@ -252,14 +248,14 @@ export default class PlayerController {
   //相机旋转
   roleRotation() {
     // console.log(this.scene)
-    let actor = this.scene.getObjectByName("Actor")
+    let actor = this.scene.getObjectByName("Unity2glTF_root")
     let playerNode = this.scene.getObjectByName('playerNode')
     //旋转
-    if (distVec > 0.05) {
-      playerNode.lookAt(ball.x, 0, ball.z)
-      let playerNodeClone = playerNode.quaternion.clone()
-      actor.quaternion.slerp(playerNodeClone, 0.1)
-    }
+    // if (distVec > 0.05) {
+      actor.lookAt(ball.x, 0, ball.z)
+    //   let playerNodeClone = playerNode.quaternion.clone()
+    //   actor.quaternion.slerp(playerNodeClone, 0.1)
+    // }
   }
 
 
