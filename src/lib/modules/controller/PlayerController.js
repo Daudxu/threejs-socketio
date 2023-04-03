@@ -64,17 +64,17 @@ export default class PlayerController {
     let model = SkeletonUtils.clone(this.player.scene)
     const mixer = new THREE.AnimationMixer(model)
     console.log('this.player.animations', this.player.animations)
-    let walking = mixer.clipAction(this.player.animations[10])
-    let idle = mixer.clipAction(this.player.animations[2])
-    let run = mixer.clipAction(this.player.animations[6])
+    // let walking = mixer.clipAction(this.player.animations[10])
+    // let idle = mixer.clipAction(this.player.animations[2])
+    // let run = mixer.clipAction(this.player.animations[6])
 
-    action = {
-      walking: walking,
-      idle: idle,
-      run: run
-    }
+    // action = {
+    //   walking: walking,
+    //   idle: idle,
+    //   run: run
+    // }
 
-    mixers.push(mixer)
+    // mixers.push(mixer)
     player.name = model.name
     player.add(model)
     player.layers.enableAll();
@@ -87,7 +87,7 @@ export default class PlayerController {
     moonDiv.textContent = name;
     moonDiv.style.marginTop = '-1em';
     const moonLabel = new CSS2DObject( moonDiv );
-    moonLabel.position.set( 0, 2, 0 );
+    moonLabel.position.set( 0, 0.3, 0 );
     model.add( moonLabel );
     moonLabel.layers.set( 0 );
   }
@@ -96,6 +96,8 @@ export default class PlayerController {
     labelRenderer.setSize( window.innerWidth, window.innerHeight );
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.color = '#ffffff';
+    labelRenderer.domElement.style.fontWeight = '700';
     document.body.appendChild( labelRenderer.domElement );
   }
 
@@ -134,9 +136,9 @@ export default class PlayerController {
         ball = targetVec.clone()
         distVec = ball.distanceTo(player.position)
         targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
-        action.idle.stop()
-        action.run.play()
-        this.playerAnimationsState = "run"
+        // action.idle.stop()
+        // action.run.play()
+        // this.playerAnimationsState = "run"
       }
     }
   }
@@ -224,9 +226,9 @@ export default class PlayerController {
       player.rotation.z = 0
     }
     if (distVec == 0 || distVec < 0) {
-      action.run.stop()
-      action.idle.play()
-      this.playerAnimationsState = 'idle'
+      // action.run.stop()
+      // action.idle.play()
+      // this.playerAnimationsState = 'idle'
     }
   }
 
@@ -271,14 +273,14 @@ export default class PlayerController {
         this.playerAnimationsArr.forEach(item=>{
           if(item.name==model.name){
             switch (message.state) {
-              case "idle":
-                item.action.run.stop()
-                item.action.idle.play()
-                break
-              case "run":
-                item.action.idle.stop()
-                item.action.run.play()
-                break
+              // case "idle":
+              //   item.action.run.stop()
+              //   item.action.idle.play()
+              //   break
+              // case "run":
+              //   item.action.idle.stop()
+              //   item.action.run.play()
+              //   break
             }
           }
         })
@@ -287,21 +289,21 @@ export default class PlayerController {
           let model = SkeletonUtils.clone(this.player.scene)
           model.name = message.id
           let mixer = new THREE.AnimationMixer(model)
-          walking = mixer.clipAction(this.player.animations[10])
-          idle = mixer.clipAction(this.player.animations[2])
-          run = mixer.clipAction(this.player.animations[6])
-          let obj={
-            name:message.id,
-            action : {
-              walking: walking,
-              idle: idle,
-              run: run
-            }
-          }
+          // walking = mixer.clipAction(this.player.animations[10])
+          // idle = mixer.clipAction(this.player.animations[2])
+          // run = mixer.clipAction(this.player.animations[6])
+          // let obj={
+          //   name:message.id,
+          //   action : {
+          //     walking: walking,
+          //     idle: idle,
+          //     run: run
+          //   }
+          // }
           this.playerAnimationsArr.push(obj)
           this.scene.add(model)
           this.create2DObject(message.id,model)
-          mixers.push(mixer)
+          // mixers.push(mixer)
         }
       }
     });

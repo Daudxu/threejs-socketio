@@ -20,11 +20,11 @@ export default class ModuleMain extends BaseMain {
     let configPlayer = {
       name: this.config.playerName,
       // url: "Model/Actor/Actor.gltf"
-      url: "RobotExpressive.glb"
+      url: "1.glb"
+      // url: "RobotExpressive.glb"
     }
     this.playerModel = await LoadResources(configPlayer)
     this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.render.renderer, this.playerModel, this.config.socket)
-
   }
 
   initMouseMove() {

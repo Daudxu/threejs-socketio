@@ -12,7 +12,6 @@ class BaseMain {
   static onLoop = () => {};
 
   constructor(container) {
-    console.log(container)
     this.container=container
     this.render=new BaseRenderer(container)
     this.baseScene = new BaseScene(container);
