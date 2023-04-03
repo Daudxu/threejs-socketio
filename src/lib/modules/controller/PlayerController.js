@@ -258,7 +258,6 @@ export default class PlayerController {
     if (distVec > 0.05) {
       playerNode.lookAt(ball.x, 0, ball.z)
       let playerNodeClone = playerNode.quaternion.clone()
-      actor.rotateY =   Math.PI
       actor.quaternion.slerp(playerNodeClone, 0.1)
     }
   }
