@@ -7,7 +7,7 @@ export default class BaseCamera {
     this.container=container
     this.renderer=renderer
     this.initCamera();
-    // this.cameraControls(this.renderer)
+    // this.cameraControls(this.renderer)/
   }
 
   /**
