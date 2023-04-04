@@ -187,12 +187,13 @@ export default class PlayerController {
               player.position.copy(targetVec)
               var normal = intersects[0].face.normal;// 当前位置曲面法线
               player.translateOnAxis(normal, 0.07);
-              distVec = targetVec.distanceTo(player.position)
+              distVec = targetVec.distanceTo(player.position);
+              player.lookAt(targetVec.x, 0, targetVec.y)
               // ball = targetVec.clone()
               // targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
               // console.log("targetVecNorm", this.scene.getObjectByName("111"))
               // var mo = player.clone();
-              this.scene.getObjectByName("111").lookAt(targetVec)
+              // this.scene.getObjectByName("111").lookAt(targetVec)
               // console.log('player', player)
           }
       }
