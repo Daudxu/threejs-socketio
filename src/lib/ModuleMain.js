@@ -44,6 +44,9 @@ export default class ModuleMain extends BaseMain {
           document.onmouseup = null
         }
       }
+    };
+    window.onmousewheel = function (e) {
+      that.controlRole.handleOnmouseWheel(e)
     }
   }
 
