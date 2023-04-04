@@ -3,6 +3,8 @@ import { Sky } from 'three/examples/jsm/objects/Sky'
 import { OBB } from 'three/examples/jsm/math/OBB'
 
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils'
+import * as TWEEN from '@tweenjs/tween.js'
+import gsap from 'gsap'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 const clock = new THREE.Clock();
@@ -16,7 +18,7 @@ let colliders = []
 //动画
 let mixers = []
 let action
-
+let tween
 let labelRenderer
 
 
@@ -184,10 +186,41 @@ export default class PlayerController {
           if (intersects[0].object.name == "Plane") {
               // console.log(intersects[0].object)
               let targetVec = intersects[0].point
-              player.position.copy(targetVec)
+              // player.position.copy(targetVec)
               var normal = intersects[0].face.normal;// 当前位置曲面法线
-              player.translateOnAxis(normal, 0.07);
+              // player.translateOnAxis(normal, 0.07);
+              // 添加动画
+              // gsap.to(
+              //   player.position, // 需要执行动画的参数对象
+              //   {// 执行动画的目标参数
+              //       x: 10, // 使盒子移动到 x 轴为 5 的位置
+              //       duration: 5, // 需要的时间，5秒
+              //       repeat: 2,//动画执行次数
+              //       yoyo: true, // 添加往返执行
+              //   }
+              // )
+              let targetPositon = new THREE.Vector3(intersects[0].x, 0, intersects[0].z);
+
+              if (tween) {
+                TWEEN.remove(tween);
+              }
+              console.log("===")
               distVec = targetVec.distanceTo(player.position);
+              gsap.to(player.position, {duration: 1, y: 10})
+              // 
+              // console.log("distVec", distVec)
+              // tween = new TWEEN.Tween(targetVec)
+              // .to(targetPositon, distVec * 800)
+              // .easing(TWEEN.Easing.Linear.None)
+              // .onUpdate(function() {
+              //   // player.position.set(this.x, 0.04, this.y);
+              //   console.log(111111)
+              //   // let pos = player.position.clone();
+              //   // pos.y = 1;
+              //   // controls.target = pos;
+              //   // controls.update();
+              // })
+              // .start();
               player.lookAt(targetVec.x, 0, targetVec.y)
               // ball = targetVec.clone()
               // targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
