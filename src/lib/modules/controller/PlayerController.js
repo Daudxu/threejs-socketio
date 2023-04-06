@@ -55,7 +55,9 @@ export default class PlayerController {
     window.addEventListener('click', function (ev) {
       that.rayPlane(ev)
     }, false)
-
+    window.addEventListener('keydown', function (e) {
+      that.keyDownWalk(e);
+    });
     that.setState(this.stateInt)
     that.socketMessage()
     // that.initCSS2DRenderer()
@@ -121,9 +123,42 @@ export default class PlayerController {
     scene.add(plane)
     this.planeArr.push(plane)
   }
+  keyDownWalk(e) {
+    // 模型朝向
+    var vector = new THREE.Vector3();
+    var vectora = this.camera.getWorldDirection(vector);
+    console.log("vectora", vectora)
+    // var theta = Math.atan2(vector.x,vector.z);
 
+    let keyCode = e.keyCode;
+    let position = player.position, rotation = player.rotation.y;
+    switch (keyCode) {
+        case 87:        //w
+            // console.log("vector", this.camera.rotation.y)
+            // player.rotation.y = this.camera.rotation.y
+            // player.lookAt(vectora.x, 0, 0)
+            position.x += 0.01 * Math.cos(rotation);
+            position.z += 0.01 * Math.sin(-rotation);
+            break;
+        case 65:        //a
+            position.x += 0.001 * Math.cos(rotation + Math.PI/2);
+            position.z += 0.001 * Math.sin(-rotation - Math.PI/2);
+            break;
+        case 68:        //d
+            position.x += 0.001 * Math.cos(rotation - Math.PI/2);
+            position.z += 0.001 * Math.sin(-rotation + Math.PI/2);
+            break;
+        case 83:        //s
+            // player.lookAt(vectora.x, 0, vectora.z)
+            position.x -= 0.001 * Math.cos(rotation);
+            position.z -= 0.001 * Math.sin(-rotation);
+            break;
+        default:
+            break;
+    }
+  }
   rayPlane(ev) {
-    this.onMouseDblclick(ev)
+    // this.onMouseDblclick(ev)
     // ev.preventDefault()
     // let getBoundingClientRect = container.getBoundingClientRect()
     // // 屏幕坐标转标准设备坐标
@@ -184,50 +219,14 @@ export default class PlayerController {
      
       if (intersects.length > 0) {
           if (intersects[0].object.name == "Plane") {
-              // console.log(intersects[0].object)
               let targetVec = intersects[0].point
-              // player.position.copy(targetVec)
-              var normal = intersects[0].face.normal;// 当前位置曲面法线
-              // player.translateOnAxis(normal, 0.07);
-              // 添加动画
-              // gsap.to(
-              //   player.position, // 需要执行动画的参数对象
-              //   {// 执行动画的目标参数
-              //       x: 10, // 使盒子移动到 x 轴为 5 的位置
-              //       duration: 5, // 需要的时间，5秒
-              //       repeat: 2,//动画执行次数
-              //       yoyo: true, // 添加往返执行
-              //   }
-              // )
               let targetPositon = new THREE.Vector3(intersects[0].x, 0, intersects[0].z);
-
+              distVec = targetVec.distanceTo(player.position);
               if (tween) {
                 TWEEN.remove(tween);
               }
               console.log("===")
-              distVec = targetVec.distanceTo(player.position);
-              gsap.to(player.position, {duration: 1, y: 10})
-              // 
-              // console.log("distVec", distVec)
-              // tween = new TWEEN.Tween(targetVec)
-              // .to(targetPositon, distVec * 800)
-              // .easing(TWEEN.Easing.Linear.None)
-              // .onUpdate(function() {
-              //   // player.position.set(this.x, 0.04, this.y);
-              //   console.log(111111)
-              //   // let pos = player.position.clone();
-              //   // pos.y = 1;
-              //   // controls.target = pos;
-              //   // controls.update();
-              // })
-              // .start();
               player.lookAt(targetVec.x, 0, targetVec.y)
-              // ball = targetVec.clone()
-              // targetVecNorm = new THREE.Vector3().subVectors(targetVec, player.position).normalize();
-              // console.log("targetVecNorm", this.scene.getObjectByName("111"))
-              // var mo = player.clone();
-              // this.scene.getObjectByName("111").lookAt(targetVec)
-              // console.log('player', player)
           }
       }
   }
