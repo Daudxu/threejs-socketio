@@ -9,6 +9,7 @@ export  function LoadResources(config) {
         if (object.isMesh) object.castShadow = true;
       });
       gltf.scene.name = config.name
+      gltf.scene.rotation.set(0, 0, 0)
       resolve(gltf)
     })
   })

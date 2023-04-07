@@ -20,11 +20,11 @@ export default class ModuleMain extends BaseMain {
     let configPlayer = {
       name: this.config.playerName,
       // url: "Model/Actor/Actor.gltf"
-      url: "RobotExpressive.glb"
+      url: "1.glb"
+      // url: "RobotExpressive.glb"
     }
     this.playerModel = await LoadResources(configPlayer)
     this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.render.renderer, this.playerModel, this.config.socket)
-
   }
 
   initMouseMove() {
@@ -44,13 +44,18 @@ export default class ModuleMain extends BaseMain {
           document.onmouseup = null
         }
       }
+    };
+    window.onmousewheel = function (e) {
+      that.controlRole.handleOnmouseWheel(e)
     }
   }
 
   initAnimate = () => {
-    requestAnimationFrame(this.initAnimate); //请求再次执行渲染函数render
-    this.render.renderer.render(this.baseScene.scene, this.baseCamera.camera);//执行渲染操作
+    // 执行渲染操作
+    this.render.renderer.render(this.baseScene.scene, this.baseCamera.camera);
     this.controlRole?.update()
+    // requestAnimationFrame
+    requestAnimationFrame(this.initAnimate); 
 
   }
 }
