@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { Sky } from 'three/examples/jsm/objects/Sky'
 import { OBB } from 'three/examples/jsm/math/OBB'
-
+import { A, D, DIRECTIONS, S, W } from '../../../utils/KeyDisplay'
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils'
 import * as TWEEN from '@tweenjs/tween.js'
 import gsap from 'gsap'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 const clock = new THREE.Clock();
 
@@ -29,8 +30,14 @@ export default class PlayerController {
     this.renderer = renderer
     this.player = playerModel
     this.socket = socket
+    this.currentAction = 'Run'
+    this.rotateQuarternion = new THREE.Quaternion()
+
+    this.walkDirection = new THREE.Vector3()
+    this.rotateAngle = new THREE.Vector3(0, 1, 0)
 
     this.target = new THREE.Vector3()
+
     this.radius = 3;
     this.theta = 0;
     this.phi = 0;
@@ -40,34 +47,55 @@ export default class PlayerController {
     this.playerAnimationsState = "idle"
     this.playerAnimationsArr = []
     this.planeArr=[]
-
+    this.toggleRun = true
     this.init()
     this.initScenario(this.scene)
     this.initSky()
+    this.keysPressed = {}
   }
 
   init() {
-    let that = this
-    that.initPlayer()
+    let _this = this
+    _this.initPlayer()
     this.scene.add(player)
 
     this.createCameras()
     window.addEventListener('click', function (ev) {
-      that.rayPlane(ev)
+      _this.rayPlane(ev)
     }, false)
-    window.addEventListener('keydown', function (e) {
-      that.keyDownWalk(e);
-    });
-    that.setState(this.stateInt)
-    that.socketMessage()
-    // that.initCSS2DRenderer()
+    // window.addEventListener('keydown', function (e) {
+    //   _this.keyDownWalk(e);
+    // });
+    _this.setState(this.stateInt)
+    _this.socketMessage()
+    // _this.initCSS2DRenderer()
+
+    window.addEventListener('keydown', (event) => {
+      // keyDisplayQueue.down(event.key)
+      if (event.shiftKey && _this.player) {
+          // console.log("==1=", event.shiftKey);
+          _this.switchRunToggle()
+      } else {
+          
+          (_this.keysPressed)[event.key.toLowerCase()] = true
+      }
+      // console.log("==keydown=", _this.keysPressed);
+  }, false);
+  window.addEventListener('keyup', (event) => {
+      // keyDisplayQueue.up(event.key);
+      (_this.keysPressed)[event.key.toLowerCase()] = false
+      // console.log("==keyup=", _this.keysPressed);
+  }, false);
   }
   
+  switchRunToggle () {
+    this.toggleRun = !this.toggleRun
+  }
   //挂载传入角色与响应动画
   initPlayer() {
     let model = SkeletonUtils.clone(this.player.scene)
     const mixer = new THREE.AnimationMixer(model)
-    console.log('this.player.animations', this.player.animations)
+    // console.log('this.player.animations', this.player.animations)
 
     // let walking = mixer.clipAction(this.player.animations[10])
     // let idle = mixer.clipAction(this.player.animations[2])
@@ -124,38 +152,39 @@ export default class PlayerController {
     this.planeArr.push(plane)
   }
   keyDownWalk(e) {
-    // 模型朝向
-    var vector = new THREE.Vector3();
-    var vectora = this.camera.getWorldDirection(vector);
-    console.log("vectora", vectora)
-    // var theta = Math.atan2(vector.x,vector.z);
+    // // 模型朝向
+    // var vector = new THREE.Vector3();
+    // var vectora = this.camera.getWorldDirection(vector);
+    // console.log("vectora", vectora)
+    // // var theta = Math.atan2(vector.x,vector.z);
 
-    let keyCode = e.keyCode;
-    let position = player.position, rotation = player.rotation.y;
-    switch (keyCode) {
-        case 87:        //w
-            // console.log("vector", this.camera.rotation.y)
-            // player.rotation.y = this.camera.rotation.y
-            // player.lookAt(vectora.x, 0, 0)
-            position.x += 0.01 * Math.cos(rotation);
-            position.z += 0.01 * Math.sin(-rotation);
-            break;
-        case 65:        //a
-            position.x += 0.001 * Math.cos(rotation + Math.PI/2);
-            position.z += 0.001 * Math.sin(-rotation - Math.PI/2);
-            break;
-        case 68:        //d
-            position.x += 0.001 * Math.cos(rotation - Math.PI/2);
-            position.z += 0.001 * Math.sin(-rotation + Math.PI/2);
-            break;
-        case 83:        //s
-            // player.lookAt(vectora.x, 0, vectora.z)
-            position.x -= 0.001 * Math.cos(rotation);
-            position.z -= 0.001 * Math.sin(-rotation);
-            break;
-        default:
-            break;
-    }
+    // let keyCode = e.keyCode;
+    // let position = player.position, rotation = player.rotation.y;
+    // switch (keyCode) {
+    //     case 87:        //w
+    //         // console.log("vector", this.camera.rotation.y)
+    //         // player.rotation.y = this.camera.rotation.y
+    //         // player.lookAt(vectora.x, 0, 0)
+    //         position.x += 0.01 * Math.cos(rotation);
+    //         position.z += 0.01 * Math.sin(-rotation);
+    //         break;
+    //     case 65:        //a
+    //         position.x += 0.001 * Math.cos(rotation + Math.PI/2);
+    //         position.z += 0.001 * Math.sin(-rotation - Math.PI/2);
+    //         break;
+    //     case 68:        //d
+    //         position.x += 0.001 * Math.cos(rotation - Math.PI/2);
+    //         position.z += 0.001 * Math.sin(-rotation + Math.PI/2);
+    //         break;
+    //     case 83:        //s
+    //         // player.lookAt(vectora.x, 0, vectora.z)
+    //         position.x -= 0.001 * Math.cos(rotation);
+    //         position.z -= 0.001 * Math.sin(-rotation);
+    //         break;
+    //     default:
+    //         break;
+    // }
+
   }
   rayPlane(ev) {
     // this.onMouseDblclick(ev)
@@ -186,6 +215,32 @@ export default class PlayerController {
     //       // this.playerAnimationsState = "run"
     //   }
     // }
+  }
+
+  directionOffset(keysPressed) {
+    var directionOffset = 0 // w
+
+    if (keysPressed[W]) {
+        if (keysPressed[A]) {
+            directionOffset = Math.PI / 4 // w+a
+        } else if (keysPressed[D]) {
+            directionOffset = - Math.PI / 4 // w+d
+        }
+    } else if (keysPressed[S]) {
+        if (keysPressed[A]) {
+            directionOffset = Math.PI / 4 + Math.PI / 2 // s+a
+        } else if (keysPressed[D]) {
+            directionOffset = -Math.PI / 4 - Math.PI / 2 // s+d
+        } else {
+            directionOffset = Math.PI // s
+        }
+    } else if (keysPressed[A]) {
+        directionOffset = Math.PI / 2 // a
+    } else if (keysPressed[D]) {
+        directionOffset = - Math.PI / 2 // d
+    }
+
+    return directionOffset
   }
   onMouseDblclick(event) {
 
@@ -225,7 +280,6 @@ export default class PlayerController {
               if (tween) {
                 TWEEN.remove(tween);
               }
-              console.log("===")
               player.lookAt(targetVec.x, 0, targetVec.y)
           }
       }
@@ -299,10 +353,14 @@ export default class PlayerController {
   }
 
    //鼠标右键控制旋转相机
-  thirdPersonCameraControl() {
+  thirdPersonCameraControl(moveX = 0, moveZ = 0) {
+    // console.log("===")
+
     let playerNode = this.scene.getObjectByName("playerNode")
     if (playerNode) {
       let positonCopy = playerNode.getWorldPosition(new THREE.Vector3())
+      // this.camera.position.x += moveX
+      // this.camera.position.z += moveZ
       this.camera.position.x = positonCopy.x + this.radius * Math.sin(this.theta * Math.PI / 180) * Math.cos(this.phi * Math.PI / 180);
       this.camera.position.y = positonCopy.y + this.radius * Math.sin(this.phi * Math.PI / 180);
       this.camera.position.z = positonCopy.z + this.radius * Math.cos(this.theta * Math.PI / 180) * Math.cos(this.phi * Math.PI / 180);
@@ -408,6 +466,45 @@ export default class PlayerController {
 
   update=()=> {
     const delta = clock.getDelta();
+    const directionPressed = DIRECTIONS.some(key => this.keysPressed[key] == true)
+      // console.log("directionPressed", directionPressed)
+    var play = '';
+    if (directionPressed) {
+        play = 'Run'
+    } else {
+        play = 'Idle'
+    }
+
+    if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
+      // console.log('player.position.x', player.position.x)
+      // 摄像机方向计算
+      var angleYCameraDirection = Math.atan2(
+              (this.camera.position.x - player.position.x), 
+              (this.camera.position.z - player.position.z))
+      // 对角线移动角度偏移
+      var directionOffset = this.directionOffset(this.keysPressed)
+
+      // rotate model
+      this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
+      player.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
+
+      // calculate direction
+      this.camera.getWorldDirection(this.walkDirection)
+      this.walkDirection.y = 0
+      this.walkDirection.normalize()
+      this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
+
+      // run/walk velocity
+      const velocity = this.currentAction == 'Run' ? this.runVelocity : this.walkVelocity
+
+      // move model & camera
+      const moveX = this.walkDirection.x * velocity * delta
+      const moveZ = this.walkDirection.z * velocity * delta
+      // this.model.position.x += moveX
+      // this.model.position.z += moveZ
+      // this.thirdPersonCameraControl(moveX, moveZ)
+      // this.updateCameraTarget(moveX, moveZ)
+  }
     // labelRenderer.render( this.scene, this.camera );
     //动画
     if (mixers) {
