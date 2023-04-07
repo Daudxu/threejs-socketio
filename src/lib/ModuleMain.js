@@ -22,7 +22,7 @@ export default class ModuleMain extends BaseMain {
       // url: "RobotExpressive.glb"
     }
     this.playerModel = await LoadResources(configPlayer)
-    this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.render.renderer, this.playerModel, this.config.socket)
+    this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.baseOrbitControls.orbitControls, this.render.renderer, this.playerModel, this.config.socket)
   }
 
   initMouseMove() {

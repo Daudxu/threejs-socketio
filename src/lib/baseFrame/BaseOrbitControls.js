@@ -1,62 +1,37 @@
 import * as THREE from 'three';
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default class BaseOrbitControls {
   
-  constructor(camera,renderer) {
-    this.container=container
-    this.renderer=renderer
-    this.initOrbitControls();
-    // this.cameraControls(this.renderer)/
+  constructor(camera, renderer) {
+    this.initOrbitControls(camera, renderer);
   }
   
   /**
-   * 初始化场景
+   * 初始化轨道控制
    */
-  initOrbitControls() {
-    that.camera = new THREE.PerspectiveCamera(50, this.container.clientWidth / this.container.clientHeight, 1, 1000 );
-    that.camera.position.set(5, 0, 5)
-    // this.camera.lookAt( 0, 0, 0 );
-    // that.controls = new PointerLockControls( this.camera, document.body );
+  initOrbitControls(camera, renderer) {
+    this.orbitControls = new OrbitControls(camera, renderer.domElement);
+    this.orbitControls.enableDamping = true
+    this.orbitControls.target.set(0, 5, 5)
+    // 是否禁止缩放
+    this.orbitControls.enableZoom = false
+    // 缩放限制
+    this.orbitControls.minDistance = 5
+    this.orbitControls.maxDistance = 15
+    // 限制最大仰视角和俯视角
+    this.orbitControls.minPolarAngle = 0
+    this.orbitControls.maxPolarAngle = 1.5
+    // 是否可以平移
+    this.orbitControls.enablePan = false
+    // 是否使用键盘
+    this.orbitControls.enableKeys = true
+    this.orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
+    this.orbitControls.mouseButtons = {
+      LEFT: THREE.MOUSE.PAN,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.ROTATE
+    }
+    this.orbitControls.update();
   }
-
-
-
-  // cameraPointerLockControls(){
-    // let that=this
-    // window.addEventListener( 'click', function () {
-    //   that.controls.lock();
-    // });
-    //
-    // this.scene.add(that.controls.getObject() );
-  // }
-
-  /**
-   * 相机控制
-   */
-  // cameraControls(render) {
-    // this.controls = new OrbitControls(this.camera, render.renderer.domElement)
-    //this.controls.target.set(0,30,0)
-    //限制最大仰视角和俯视角
-    // this.controls.minPolarAngle = 0
-    // this.controls.maxPolarAngle = 1.5
-    //禁止缩放
-    //this.controls.enableZoom=false
-    //缩放限制
-    // this.controls.minDistance = 0
-    // this.controls.maxDistance = 200
-    //是否使用键盘
-  //   this.controls.enableKeys = false
-
-  //   //是否可以平移
-  //   this.controls.enablePan=false
-
-  //   this.controls.mouseButtons = {
-  //     LEFT: THREE.MOUSE.PAN,
-  //     MIDDLE: THREE.MOUSE.DOLLY,
-  //     RIGHT: THREE.MOUSE.ROTATE
-  //   }
-  // }
-
 }
