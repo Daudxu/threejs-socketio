@@ -2,23 +2,23 @@ import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 
-export default class BaseCamera {
-  constructor(container,renderer) {
+export default class BaseOrbitControls {
+  
+  constructor(camera,renderer) {
     this.container=container
     this.renderer=renderer
-    this.initCamera();
+    this.initOrbitControls();
     // this.cameraControls(this.renderer)/
   }
   
   /**
    * 初始化场景
    */
-  initCamera() {
+  initOrbitControls() {
     that.camera = new THREE.PerspectiveCamera(50, this.container.clientWidth / this.container.clientHeight, 1, 1000 );
     that.camera.position.set(5, 0, 5)
     // this.camera.lookAt( 0, 0, 0 );
     // that.controls = new PointerLockControls( this.camera, document.body );
-
   }
 
 

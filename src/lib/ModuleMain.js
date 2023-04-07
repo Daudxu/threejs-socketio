@@ -5,8 +5,6 @@ import {LoadResources} from './modules/loadResources/LoadResources'
 export default class ModuleMain extends BaseMain {
   constructor(container, config) {
     super(container)
-    //模型url地址
-    // this.fileUrl = "http://10.10.0.99:8000/api/file/getFile/";
     this.domElement = this.render.renderer.domElement
     this.config = config
     this.init()
@@ -55,6 +53,7 @@ export default class ModuleMain extends BaseMain {
     this.render.renderer.render(this.baseScene.scene, this.baseCamera.camera);
     this.controlRole?.update()
     // requestAnimationFrame
+
     requestAnimationFrame(this.initAnimate); 
 
   }
