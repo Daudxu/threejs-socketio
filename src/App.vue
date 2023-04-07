@@ -20,8 +20,20 @@
         </swiper-slide>
       </swiper>
       <input v-model="name" class="name"/>
-      <button @click="handleClickCreateAvatar">创建角色</button>
+      <button @click="() => handleClickCreateAvatar()">创建角色</button>
     </div>
+  </div>
+  <div class="cl-chat">
+     <div class="cl-main"> 
+         <div class="cl-chat-content"></div>
+         <div class="cl-chat-send">
+            <input type="text" name="message"/>
+            <button>Send</button>
+         </div>
+     </div>
+  </div>
+  <div class="cl-online-players">
+      <div>{{ playerCount }}</div>
   </div>
   <div id="container" class="container" ref="container">
   </div>
@@ -37,17 +49,20 @@ import { EffectCards } from 'swiper';
 import 'swiper/css/effect-cards';
 import 'swiper/css';
 
-const socket = io('http://localhost:3000');
+
 const isShowCreateAvatar = ref(true)
 const name = ref()
 const hotZoneData = ref(null)
 const container = ref()
+const playerCount = ref(0)
 const glbModelPath = ref()
 const roleList = [
 './1.glb',
 './2.glb',
 './3.glb'
 ];
+let socket;
+
 const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
 }
@@ -58,14 +73,21 @@ const onSlideChange = (e) => {
 }
 
 onMounted(() => {
-  // window.addEventListener('DOMContentLoaded', function () {
-  //   socketIo()
-  // })
+  socket = io('ws://localhost:3000');
+  socket.on('broadcast', (message) => {
+      console.log(message)
+      var count = Object.keys(message).length;
+      playerCount.value = count
+  })
 });
 
 const handleClickCreateAvatar = async () => {
+  // alert(111)
   if(name.value && name.value !== 'undefined') {
-    await connectSocket()
+  
+    // await connectSocket(socket)
+    // getPlayerCount(socket)
+    socket.emit('broadcast', { message: 'A new user has connected!' });
     initThree(socket)
     isShowCreateAvatar.value = false
   }else{
@@ -73,12 +95,14 @@ const handleClickCreateAvatar = async () => {
   }
 }
 // 连接到webSocket
-const connectSocket = () => {
-    socket.on('connect',function(){
-      console.log('连接成功');
-      socket.send('welcome');
-    });
-}
+// const connectSocket = (socket) => {
+//     socket.on('connect',function(){
+//       console.log('连接成功');
+//       socket.emit('broadcast', { message: 'A new user has connected!' });
+
+//     });
+// }
+
 
 const initThree = (socket) => {
     const containerObj = container.value
@@ -100,6 +124,26 @@ const initThree = (socket) => {
 </script>
 
 <style lang="stylus">
+
+.cl-chat {
+  position: fixed
+  width: 380px
+  height: 380px
+  background: #ffffff
+  bottom: 30px;
+  left: 30px;
+  border-radius: 18px
+}
+
+.cl-online-players {
+  position: fixed
+  width: 130px
+  height: 180px
+  background: #ffffff
+  top: 20%;
+  right: 30px;
+  border-radius: 18px
+}
 
 .swiper {
   width: 240px;

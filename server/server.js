@@ -21,7 +21,8 @@ io.on('connection', async (socket) => {
     var total = io.engine.clientsCount;
     console.log('服务器连接成功ID:', socket.id);
     users[socket.id] = socket.id;
-
+    // socket.emit('playerCount', users.length);
+    // console.log('users.length:',  users.length);
     logger.info(total);
     socket.on('disconnect',function () {
         // console.log('断开统计在线客户端数量', total);
@@ -30,6 +31,15 @@ io.on('connection', async (socket) => {
         // logger.info('断开统计在线客户端数量:' +total);
         // socket.broadcast.emit('message', data);
         delete users[socket.id];
+    })
+    socket.on('broadcast', function(data){ 
+        console.log(data)
+        socket.emit('broadcast', users); 
+    });
+    socket.on('playerCount',function () {
+        // console.log('创建角色成功统计在线客户端数量', total);
+        // logger.info('创建角色在线客户端数量:' +total);
+        socket.emit('playerCount', users);
     })
     socket.on('message',function (data) {
         // console.log('创建角色成功统计在线客户端数量', total);
