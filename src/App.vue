@@ -33,7 +33,12 @@
      </div>
   </div>
   <div class="cl-online-players">
-      <div>{{ playerCount }}</div>
+      <div>Online User {{  playerCount }}</div>
+      <div>
+        <ul>
+           <li v-for="(item, index) in users.list" :key="index">{{ item.name }}</li>
+        </ul>
+      </div>
   </div>
   <div id="container" class="container" ref="container">
   </div>
@@ -43,15 +48,19 @@
 import * as THREE from "three";
 import { renderAPI } from "./lib/renderAPI";
 import io from 'socket.io-client'
-import { onMounted, ref } from "vue"
+import { onMounted, ref, reactive } from "vue"
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { EffectCards } from 'swiper';
 import 'swiper/css/effect-cards';
 import 'swiper/css';
 
-
+const socket = io('ws://localhost:3000');
 const isShowCreateAvatar = ref(true)
-const name = ref()
+let name = ref()
+let users = reactive({
+    list: []
+})
+
 const hotZoneData = ref(null)
 const container = ref()
 const playerCount = ref(0)
@@ -61,11 +70,11 @@ const roleList = [
 './2.glb',
 './3.glb'
 ];
-let socket = null;
+// let socket = null;
 
 const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
-}
+} 
 
 const onSlideChange = (e) => {
   let pageIndex = e.activeIndex;
@@ -73,11 +82,11 @@ const onSlideChange = (e) => {
 }
 
 onMounted(() => {
-  socket = io('ws://localhost:3000');
+
   socket.on('connect', () => console.log('connect: websocket 连接成功！'))
   socket.on('broadcast', (message) => {
-      console.log(message)
-      var count = Object.keys(message).length;
+      var count = message.length;
+      users.list = message
       playerCount.value = count
   })
 });
@@ -88,7 +97,7 @@ const handleClickCreateAvatar = async () => {
   
     // await connectSocket(socket)
     // getPlayerCount(socket)
-    socket.emit('broadcast', { message: 'A new user has connected!' });
+    socket.emit('broadcast', name.value);
     initThree(socket)
     isShowCreateAvatar.value = false
   }else{

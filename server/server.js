@@ -12,35 +12,28 @@ const cors = require('cors');
 app.use(cors());
 const port = 3000;
 const users = {};
-
-// io.on('conenct', function(socket){
-//     console.log('conenct',socket.id);
-// });
+let usersList = [];
 
 io.on('connection', async (socket) => {
     var total = io.engine.clientsCount;
     console.log('服务器连接成功ID:', socket.id);
-    users[socket.id] = socket.id;
-    // socket.emit('playerCount', users.length);
-    // console.log('users.length:',  users.length);
     logger.info(total);
     socket.on('disconnect',function () {
-        // console.log('断开统计在线客户端数量', total);
-        console.log('断开统计在线客户端ID', socket.id);
-        // console.log(socket.id); 
-        // logger.info('断开统计在线客户端数量:' +total);
-        // socket.broadcast.emit('message', data);
-        delete users[socket.id];
+        // console.log('断开统计在线客户端ID', socket.id);
+        usersList = removeUser(usersList, 'id', socket.id)
+        io.emit('broadcast', usersList);    
     })
-    socket.on('broadcast', function(data){ 
-        console.log(data)
-        socket.emit('broadcast', users); 
+    socket.on('broadcast', function(name){ 
+        let user = {
+            'id': socket.id,
+            'name': name
+        }
+        usersList.push(user)
+        io.emit('broadcast', usersList);          
     });
-    socket.on('playerCount',function () {
-        // console.log('创建角色成功统计在线客户端数量', total);
-        // logger.info('创建角色在线客户端数量:' +total);
-        socket.emit('playerCount', users);
-    })
+    socket.on('usersList',function () {
+        io.emit('usersList', usersList);
+    })  
     socket.on('message',function (data) {
         // console.log('创建角色成功统计在线客户端数量', total);
         // logger.info('创建角色在线客户端数量:' +total);
@@ -48,6 +41,11 @@ io.on('connection', async (socket) => {
     })
 });
 
+const removeUser = (objects, key, value) => {
+    return objects.filter(function(object) {
+      return object[key] !== value;
+    });
+}
 
 app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
