@@ -21,18 +21,20 @@ let mixers = []
 let action
 let tween
 let labelRenderer
-
+const runVelocity = 5
+const walkVelocity = 2
 
 export default class PlayerController {
-  constructor(scene, camera, renderer, playerModel, socket) {
+  constructor(scene, camera, orbitControls, renderer, playerModel, socket) {
     this.scene = scene
     this.camera = camera
+    this.orbitControls = orbitControls
     this.renderer = renderer
     this.player = playerModel
     this.socket = socket
     this.currentAction = 'Run'
     this.rotateQuarternion = new THREE.Quaternion()
-
+    this.cameraTarget = new THREE.Vector3()
     this.walkDirection = new THREE.Vector3()
     this.rotateAngle = new THREE.Vector3(0, 1, 0)
 
@@ -59,7 +61,7 @@ export default class PlayerController {
     _this.initPlayer()
     this.scene.add(player)
 
-    this.createCameras()
+    // this.createCameras()
     window.addEventListener('click', function (ev) {
       _this.rayPlane(ev)
     }, false)
@@ -69,23 +71,17 @@ export default class PlayerController {
     _this.setState(this.stateInt)
     _this.socketMessage()
     // _this.initCSS2DRenderer()
-
+    
     window.addEventListener('keydown', (event) => {
-      // keyDisplayQueue.down(event.key)
       if (event.shiftKey && _this.player) {
-          // console.log("==1=", event.shiftKey);
           _this.switchRunToggle()
-      } else {
-          
+      } else {   
           (_this.keysPressed)[event.key.toLowerCase()] = true
       }
-      // console.log("==keydown=", _this.keysPressed);
-  }, false);
-  window.addEventListener('keyup', (event) => {
-      // keyDisplayQueue.up(event.key);
-      (_this.keysPressed)[event.key.toLowerCase()] = false
-      // console.log("==keyup=", _this.keysPressed);
-  }, false);
+    }, false);
+    window.addEventListener('keyup', (event) => {
+          (_this.keysPressed)[event.key.toLowerCase()] = false
+    }, false);
   }
   
   switchRunToggle () {
@@ -142,7 +138,7 @@ export default class PlayerController {
 
   initScenario(scene) {
     //创建一个地板，如果只有网格，不能得到点击位置的坐标
-    let geometry = new THREE.PlaneGeometry(8, 8)
+    let geometry = new THREE.PlaneGeometry(100, 100)
     geometry.rotateX(-Math.PI / 2)
     let mail = new THREE.MeshBasicMaterial({color: 0x696969})
     let plane = new THREE.Mesh(geometry, mail)
@@ -151,41 +147,7 @@ export default class PlayerController {
     scene.add(plane)
     this.planeArr.push(plane)
   }
-  keyDownWalk(e) {
-    // // 模型朝向
-    // var vector = new THREE.Vector3();
-    // var vectora = this.camera.getWorldDirection(vector);
-    // console.log("vectora", vectora)
-    // // var theta = Math.atan2(vector.x,vector.z);
-
-    // let keyCode = e.keyCode;
-    // let position = player.position, rotation = player.rotation.y;
-    // switch (keyCode) {
-    //     case 87:        //w
-    //         // console.log("vector", this.camera.rotation.y)
-    //         // player.rotation.y = this.camera.rotation.y
-    //         // player.lookAt(vectora.x, 0, 0)
-    //         position.x += 0.01 * Math.cos(rotation);
-    //         position.z += 0.01 * Math.sin(-rotation);
-    //         break;
-    //     case 65:        //a
-    //         position.x += 0.001 * Math.cos(rotation + Math.PI/2);
-    //         position.z += 0.001 * Math.sin(-rotation - Math.PI/2);
-    //         break;
-    //     case 68:        //d
-    //         position.x += 0.001 * Math.cos(rotation - Math.PI/2);
-    //         position.z += 0.001 * Math.sin(-rotation + Math.PI/2);
-    //         break;
-    //     case 83:        //s
-    //         // player.lookAt(vectora.x, 0, vectora.z)
-    //         position.x -= 0.001 * Math.cos(rotation);
-    //         position.z -= 0.001 * Math.sin(-rotation);
-    //         break;
-    //     default:
-    //         break;
-    // }
-
-  }
+  
   rayPlane(ev) {
     // this.onMouseDblclick(ev)
     // ev.preventDefault()
@@ -216,32 +178,57 @@ export default class PlayerController {
     //   }
     // }
   }
+   // front, back, left, right
+  directionOffset(keysPressed, toward = "front" ) {
+    if(toward === 'front'){
+        var directionOffset = 0 // w
 
-  directionOffset(keysPressed) {
-    var directionOffset = 0 // w
+        if (keysPressed[W]) {
+            if (keysPressed[A]) {
+                directionOffset = Math.PI / 4 // w+a
+            } else if (keysPressed[D]) {
+                directionOffset = - Math.PI / 4 // w+d
+            }
+        } else if (keysPressed[S]) {
+            if (keysPressed[A]) {
+                directionOffset = Math.PI / 4 + Math.PI / 2 // s+a
+            } else if (keysPressed[D]) {
+                directionOffset = -Math.PI / 4 - Math.PI / 2 // s+d
+            } else {
+                directionOffset = Math.PI // s
+            }
+        } else if (keysPressed[A]) {
+            directionOffset = Math.PI / 2 // a
+        } else if (keysPressed[D]) {
+            directionOffset = - Math.PI / 2 // d
+        }
+        return directionOffset
+    }else if(toward === 'back'){
+        var directionOffset = Math.PI  // w
 
-    if (keysPressed[W]) {
-        if (keysPressed[A]) {
-            directionOffset = Math.PI / 4 // w+a
+        if (keysPressed[W]) {
+            if (keysPressed[A]) {
+                directionOffset = -Math.PI / 4 - Math.PI / 2  // w+a
+            } else if (keysPressed[D]) {
+                directionOffset =  Math.PI / 4 + Math.PI / 2 // w+d
+            }
+        } else if (keysPressed[S]) {
+            if (keysPressed[A]) {
+                directionOffset = Math.PI / 4 - Math.PI / 2 // s+a
+            } else if (keysPressed[D]) {
+                directionOffset =  - Math.PI / 4 + Math.PI / 2// s+d
+            } else {
+                directionOffset = 0 // s
+            }
+        } else if (keysPressed[A]) {
+            directionOffset = -Math.PI / 2 // a
         } else if (keysPressed[D]) {
-            directionOffset = - Math.PI / 4 // w+d
+            directionOffset =  Math.PI / 2 // d
         }
-    } else if (keysPressed[S]) {
-        if (keysPressed[A]) {
-            directionOffset = Math.PI / 4 + Math.PI / 2 // s+a
-        } else if (keysPressed[D]) {
-            directionOffset = -Math.PI / 4 - Math.PI / 2 // s+d
-        } else {
-            directionOffset = Math.PI // s
-        }
-    } else if (keysPressed[A]) {
-        directionOffset = Math.PI / 2 // a
-    } else if (keysPressed[D]) {
-        directionOffset = - Math.PI / 2 // d
+        return directionOffset
     }
-
-    return directionOffset
   }
+
   onMouseDblclick(event) {
 
       event.preventDefault();
@@ -285,13 +272,13 @@ export default class PlayerController {
       }
   }
   // 创建
-  createCameras() {
-      let childNode = new THREE.Object3D()
-      let playerNode = childNode.clone()
-      childNode.name = "childNode"
-      playerNode.name = "playerNode"
-      player.add(playerNode)
-  }
+  // createCameras() {
+  //     let childNode = new THREE.Object3D()
+  //     let playerNode = childNode.clone()
+  //     childNode.name = "childNode"
+  //     playerNode.name = "playerNode"
+  //     player.add(playerNode)
+  // }
 
   // 创建天空环境
   initSky() {
@@ -397,17 +384,17 @@ export default class PlayerController {
     // }
   }
 
-  selectController(delta) {
-    switch (this.stateInt) {
-      case 0:
-        //点击地面移动
-        this.thirdPersonCameraControl()
-        this.roleClickMove()
-        this.roleRotation()
-        break
-      default:
-    }
-  }
+  // selectController(delta) {
+  //   switch (this.stateInt) {
+  //     case 0:
+  //       //点击地面移动
+  //       this.thirdPersonCameraControl()
+  //       this.roleClickMove()
+  //       this.roleRotation()
+  //       break
+  //     default:
+  //   }
+  // }
 
   socketMessage() {
     this.socket.on('message', (message) => {
@@ -461,9 +448,17 @@ export default class PlayerController {
     });
   }
 
-  // 创建传送点
+   updateCameraTarget(moveX, moveZ) {
+    // move camera
+    this.camera.position.x += moveX
+    this.camera.position.z += moveZ
   
-
+    // update camera target
+    this.cameraTarget.x = player.position.x
+    this.cameraTarget.y = player.position.y + 1
+    this.cameraTarget.z = player.position.z
+    this.orbitControls.target = this.cameraTarget
+  }
   update=()=> {
     const delta = clock.getDelta();
     const directionPressed = DIRECTIONS.some(key => this.keysPressed[key] == true)
@@ -474,7 +469,9 @@ export default class PlayerController {
     } else {
         play = 'Idle'
     }
-
+    if (this.currentAction != play) {
+      this.currentAction = play
+    }
     if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
       // console.log('player.position.x', player.position.x)
       // 摄像机方向计算
@@ -482,7 +479,8 @@ export default class PlayerController {
               (this.camera.position.x - player.position.x), 
               (this.camera.position.z - player.position.z))
       // 对角线移动角度偏移
-      var directionOffset = this.directionOffset(this.keysPressed)
+      var directionOffset = this.directionOffset(this.keysPressed, 'back')
+      var directionOffseta = this.directionOffset(this.keysPressed, 'front')
 
       // rotate model
       this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
@@ -492,29 +490,28 @@ export default class PlayerController {
       this.camera.getWorldDirection(this.walkDirection)
       this.walkDirection.y = 0
       this.walkDirection.normalize()
-      this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
+      this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffseta)
 
       // run/walk velocity
-      const velocity = this.currentAction == 'Run' ? this.runVelocity : this.walkVelocity
+      const velocity = this.currentAction == 'Run' ? runVelocity : walkVelocity
 
       // move model & camera
       const moveX = this.walkDirection.x * velocity * delta
       const moveZ = this.walkDirection.z * velocity * delta
-      // this.model.position.x += moveX
-      // this.model.position.z += moveZ
-      // this.thirdPersonCameraControl(moveX, moveZ)
-      // this.updateCameraTarget(moveX, moveZ)
+      player.position.x += moveX
+      player.position.z += moveZ
+      this.updateCameraTarget(moveX, moveZ)
   }
     // labelRenderer.render( this.scene, this.camera );
     //动画
     if (mixers) {
       for (const mixer of mixers) mixer.update(delta);
     }
-    this.selectController(delta)
-    let playerNode = this.scene.getObjectByName('playerNode')
+    // this.selectController(delta)
+    this.orbitControls.update()
     let obj = {
       playerPosition: player.position,
-      playerQuaternion: playerNode.quaternion,
+      playerQuaternion: player.quaternion,
       state: this.playerAnimationsState,
       id: this.player.scene.name,
     }
