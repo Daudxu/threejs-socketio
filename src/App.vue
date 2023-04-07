@@ -28,7 +28,7 @@
          <div class="cl-chat-content"></div>
          <div class="cl-chat-send">
             <input type="text" name="message"/>
-            <button>Send</button>
+            <button @click="handleClickTest">Send</button>
          </div>
      </div>
   </div>
@@ -61,7 +61,7 @@ const roleList = [
 './2.glb',
 './3.glb'
 ];
-let socket;
+let socket = null;
 
 const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
@@ -74,6 +74,7 @@ const onSlideChange = (e) => {
 
 onMounted(() => {
   socket = io('ws://localhost:3000');
+  socket.on('connect', () => console.log('connect: websocket 连接成功！'))
   socket.on('broadcast', (message) => {
       console.log(message)
       var count = Object.keys(message).length;
@@ -119,6 +120,10 @@ const initThree = (socket) => {
         })
         .catch();
     }
+}
+
+const handleClickTest = () => {
+  socket.emit('broadcast', { message: 'A new user has connected!' });
 }
 
 </script>
