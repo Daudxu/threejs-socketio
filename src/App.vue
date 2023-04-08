@@ -55,6 +55,8 @@ import 'swiper/css/effect-cards';
 import 'swiper/css';
 
 const socket = io('ws://localhost:3000');
+socket.emit('join', {'room': 'myroom'})
+
 const isShowCreateAvatar = ref(true)
 let name = ref()
 let users = reactive({

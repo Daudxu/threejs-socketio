@@ -13,16 +13,15 @@ app.use(cors());
 const port = 3000;
 const users = {};
 let usersList = [];
+// 设置一个默认房间
+const roomName = "gameRome"
+var roomInfo = {};
 
 io.on('connection', async (socket) => {
     var total = io.engine.clientsCount;
-    console.log('服务器连接成功ID:', socket.id);
+    var user = '';
+    console.log('服务器连接成功ID:', socket.id);x
     logger.info(total);
-    socket.on('disconnect',function () {
-        // console.log('断开统计在线客户端ID', socket.id);
-        usersList = removeUser(usersList, 'id', socket.id)
-        io.emit('broadcast', usersList);    
-    })
     socket.on('broadcast', function(name){ 
         let user = {
             'id': socket.id,
@@ -39,6 +38,55 @@ io.on('connection', async (socket) => {
         // logger.info('创建角色在线客户端数量:' +total);
         socket.broadcast.emit('message', data);
     })
+    // 加入游戏房间
+    socket.on('join', function (userName) {
+        user = userName;
+    
+        // 将用户昵称加入房间名单中
+        if (!roomInfo[roomName]) {
+          roomInfo[roomName] = [];
+        }
+        roomInfo[roomName].push(user);
+    
+        socket.join(roomName);    // 加入房间
+        // 通知房间内人员
+        io.to(roomName).emit('system', user + '加入了房间', roomInfo[roomName]);  
+        console.log(user + '加入了' + roomName);
+    });
+    socket.on('leave', function () {
+        socket.emit('disconnect');
+    });
+    socket.on('disconnect', function () {
+        // 从房间名单中移除
+        var index = roomInfo[roomName].indexOf(user);
+        if (index !== -1) {
+          roomInfo[roomName].splice(index, 1);
+        }
+    
+        socket.leave(roomName);    // 退出房间
+        io.to(roomName).emit('sys', user + '退出了房间', roomInfo[roomName]);
+        console.log(user + '退出了' + roomName);
+
+        // console.log('断开统计在线客户端ID', socket.id);
+        usersList = removeUser(usersList, 'id', socket.id)
+        io.emit('broadcast', usersList);    
+      });  
+    // 接收用户消息,发送相应的房间
+    socket.on('gameRoom', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if (roomInfo[roomName].indexOf(user) === -1) {  
+        return false;
+        }
+        io.to(roomName).emit('msg', user, msg);
+    });
+    // 接收用户游戏角色消息,发送相应的游戏信息到组队房间
+    socket.on('gameInfo', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if (roomInfo[roomName].indexOf(user) === -1) {  
+        return false;
+        }
+        io.broadcast.to(roomName).emit('msg', user, msg);
+    });
 });
 
 const removeUser = (objects, key, value) => {
