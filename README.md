@@ -8,3 +8,5 @@ yarn dev
 cd server
 yarn
 yarn dev
+
+### chat room
