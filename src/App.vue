@@ -25,18 +25,55 @@
   </div>
   <div class="cl-chat">
      <div class="cl-main"> 
-         <div class="cl-chat-content"></div>
-         <div class="cl-chat-send">
-            <input type="text" name="message"/>
-            <button @click="handleClickTest">Send</button>
+         <div class="cl-chat-content">
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+          <p>asdasdasdasd</p>
+         </div>
+         <div class="cl-chat-form">
+            <input type="text" class="cl-chat-msg" v-model="msg"  />
+            <button class="cl-send-chat" @click="handleClickTest">Send</button>
          </div>
      </div>
   </div>
-  <div class="cl-online-players">
-      <div>Online User {{  playerCount }}</div>
-      <div>
+  <div class="cl-online-users">
+      <div class="cl-user-count">Online User {{  playerCount }}</div>
+      <div class="cl-user-list">
         <ul>
-           <li v-for="(item, index) in users.list" :key="index">{{ item.name }}</li>
+           <li v-for="(item, index) in users.list" :key="index">{{ item }}</li> 
         </ul>
       </div>
   </div>
@@ -55,13 +92,13 @@ import 'swiper/css/effect-cards';
 import 'swiper/css';
 
 const socket = io('ws://localhost:3000');
-socket.emit('join', {'room': 'myroom'})
 
 const isShowCreateAvatar = ref(true)
 let name = ref()
 let users = reactive({
     list: []
 })
+let msg = ref("")
 
 const hotZoneData = ref(null)
 const container = ref()
@@ -72,7 +109,6 @@ const roleList = [
 './2.glb',
 './3.glb'
 ];
-// let socket = null;
 
 const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
@@ -84,38 +120,44 @@ const onSlideChange = (e) => {
 }
 
 onMounted(() => {
-
   socket.on('connect', () => console.log('connect: websocket 连接成功！'))
-  socket.on('broadcast', (message) => {
-      var count = message.length;
-      users.list = message
-      playerCount.value = count
-  })
-});
+  // 监听系统消息
+  socket.on('system', function (sysMsg, userList) {
+    var message = '<div class="sysMsg">' + sysMsg + '</div>';
+    console.log("message", message)
+    // $('#msglog').append(message);
+    playerCount.value = userList.length
+    users.list = userList
+  });
+  // 监听房间消息
+  socket.on('roomMessage', function (userName, userMessage) {
+    console.log("用户：" + userName + "说：" + userMessage)
+    // var message = '<div class="sysMsg">' + sysMsg + '</div>';
+    // console.log("message", message)
+    // // $('#msglog').append(message);
+    // playerCount.value = users.length
+    // users.list = userList
+  });
 
+});
+// 创建角色
 const handleClickCreateAvatar = async () => {
-  // alert(111)
   if(name.value && name.value !== 'undefined') {
-  
-    // await connectSocket(socket)
+    // 加入房间
+    joinRoom(name.value)
     // getPlayerCount(socket)
-    socket.emit('broadcast', name.value);
+    // socket.emit('broadcast', name.value);
     initThree(socket)
     isShowCreateAvatar.value = false
   }else{
     alert('请输入角色名称')
   }
 }
-// 连接到webSocket
-// const connectSocket = (socket) => {
-//     socket.on('connect',function(){
-//       console.log('连接成功');
-//       socket.emit('broadcast', { message: 'A new user has connected!' });
-
-//     });
-// }
-
-
+// 加入房间
+const joinRoom = (userName) => {
+  socket.emit('join', userName);
+}
+// 初始化角色
 const initThree = (socket) => {
     const containerObj = container.value
     let config={
@@ -132,33 +174,112 @@ const initThree = (socket) => {
         .catch();
     }
 }
-
+// 测试
 const handleClickTest = () => {
-  socket.emit('broadcast', { message: 'A new user has connected!' });
+  socket.emit('roomMessage', "A new user has connected!");
 }
 
 </script>
 
 <style lang="stylus">
-
+// chat style
 .cl-chat {
   position: fixed
   width: 380px
   height: 380px
-  background: #ffffff
   bottom: 30px;
-  left: 30px;
+  left: 15px;
   border-radius: 18px
+  background-color:rgba(0,0,0,0.2);
+  padding: 17px
+  .cl-chat-content {
+    width: 380px
+    height: 338px
+    margin-bottom: 10px
+    overflow-y: auto
+    &::-webkit-scrollbar {
+      width: 10px;  
+      height: 1px;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+      background: #535353;
+    }
+    &::-webkit-scrollbar-track {
+      -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      background: #EDEDED;
+    }
+  }
+  .cl-chat-form {
+    display: flex
+    justify-content: space-between
+    .cl-chat-msg {
+      width: 250px
+      height: 0px
+      background-color:rgba(0,0,0,0.5);
+      padding: 15px
+      color: #ffffff
+      border-radius:18px
+    }
+    .cl-send-chat {
+      width: 77px
+      height: 30px
+      background-color:rgba(0,0,0,0.5);
+      color: #ffffff
+      border-radius:18px
+    }
+  }
 }
 
-.cl-online-players {
+// online users style
+.cl-online-users {
   position: fixed
   width: 130px
-  height: 180px
-  background: #ffffff
+  height: 185px
   top: 20%;
-  right: 30px;
+  right: 15px;
   border-radius: 18px
+  background-color:rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column
+  .cl-user-count {
+    font-family: 'Inter', sans-serif;
+    color: #ffffff
+    font-weight: bold
+    text-align: center
+    padding: 10px 10px 5px 10px
+  }
+  .cl-user-list {
+    padding: 0 5px 5px 5px
+    ul {
+      height: 150px
+      overflow-y: auto
+      li {
+        font-family: 'Inter', sans-serif;
+        color: #05ff5e
+        padding: 5px
+        font-weight: 200
+        text-align: left
+        border-bottom: 1px dashed rgba(0,0,0,0.2);
+      }
+      &::-webkit-scrollbar {
+        width: 10px;  
+        height: 1px;
+      }
+      &::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        background: #535353;
+      }
+      &::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        border-radius: 10px;
+        background: #EDEDED;
+      }
+    }
+  }
 }
 
 .swiper {

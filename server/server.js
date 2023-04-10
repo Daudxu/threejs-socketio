@@ -12,88 +12,82 @@ const cors = require('cors');
 app.use(cors());
 const port = 3000;
 const users = {};
-let usersList = [];
 // 设置一个默认房间
 const roomName = "gameRome"
 var roomInfo = {};
 
 io.on('connection', async (socket) => {
-    var total = io.engine.clientsCount;
-    var user = '';
-    console.log('服务器连接成功ID:', socket.id);x
+    let total = io.engine.clientsCount;
+    let user = '';
+    console.log('服务器连接成功ID:', socket.id);
     logger.info(total);
-    socket.on('broadcast', function(name){ 
-        let user = {
-            'id': socket.id,
-            'name': name
-        }
-        usersList.push(user)
-        io.emit('broadcast', usersList);          
-    });
-    socket.on('usersList',function () {
-        io.emit('usersList', usersList);
-    })  
-    socket.on('message',function (data) {
-        // console.log('创建角色成功统计在线客户端数量', total);
-        // logger.info('创建角色在线客户端数量:' +total);
-        socket.broadcast.emit('message', data);
-    })
     // 加入游戏房间
     socket.on('join', function (userName) {
         user = userName;
-    
         // 将用户昵称加入房间名单中
         if (!roomInfo[roomName]) {
-          roomInfo[roomName] = [];
+            roomInfo[roomName] = [];
         }
         roomInfo[roomName].push(user);
-    
-        socket.join(roomName);    // 加入房间
+        // 加入房间
+        socket.join(roomName);
         // 通知房间内人员
-        io.to(roomName).emit('system', user + '加入了房间', roomInfo[roomName]);  
-        console.log(user + '加入了' + roomName);
+        io.to(roomName).emit('system', user + ' joined Room ' + roomName, roomInfo[roomName]);  
+        console.log(user + ' joined Room ' + roomName);
     });
+    socket.on('message',function (data) {
+        socket.broadcast.emit('message', data);
+    })
+
     socket.on('leave', function () {
         socket.emit('disconnect');
     });
+    // 断开则从房间名单中移除玩家
     socket.on('disconnect', function () {
-        // 从房间名单中移除
-        var index = roomInfo[roomName].indexOf(user);
-        if (index !== -1) {
-          roomInfo[roomName].splice(index, 1);
+        if(user){
+            var index = roomInfo[roomName].indexOf(user);
+            if (index !== -1) {
+              roomInfo[roomName].splice(index, 1);
+            }
+            socket.leave(roomName); 
+            io.to(roomName).emit('system', user + ' 退出了房间 ', roomInfo[roomName]);
+            console.log(user + ' 退出了 ' + roomName);
         }
-    
-        socket.leave(roomName);    // 退出房间
-        io.to(roomName).emit('sys', user + '退出了房间', roomInfo[roomName]);
-        console.log(user + '退出了' + roomName);
-
-        // console.log('断开统计在线客户端ID', socket.id);
-        usersList = removeUser(usersList, 'id', socket.id)
-        io.emit('broadcast', usersList);    
-      });  
+      });
     // 接收用户消息,发送相应的房间
-    socket.on('gameRoom', function (msg) {
+    socket.on('roomMessage', function (msg) {
         // 验证如果用户不在房间内则不给发送
         if (roomInfo[roomName].indexOf(user) === -1) {  
-        return false;
+           return false;
         }
-        io.to(roomName).emit('msg', user, msg);
+        io.to(roomName).emit('roomMessage', user, msg);
+    });
+    socket.on('message', function (msg) {
+        if(msg === "hi") {
+            console.log("===")
+        }
+        
+        // // 验证如果用户不在房间内则不给发送
+        // if (roomInfo[roomName].indexOf(user) === -1) {  
+        //    return false;
+        // }
+        // io.to(roomName).emit('message', user, msg);
     });
     // 接收用户游戏角色消息,发送相应的游戏信息到组队房间
     socket.on('gameInfo', function (msg) {
         // 验证如果用户不在房间内则不给发送
         if (roomInfo[roomName].indexOf(user) === -1) {  
-        return false;
+            return false;
         }
         io.broadcast.to(roomName).emit('msg', user, msg);
     });
 });
 
-const removeUser = (objects, key, value) => {
-    return objects.filter(function(object) {
-      return object[key] !== value;
-    });
-}
+// const removeUser = (objects, key, value) => {
+//     return objects.filter(function(object) {
+//       return object[key] !== value;
+//     });
+// }
 
 app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
