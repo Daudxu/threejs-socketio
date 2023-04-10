@@ -7,12 +7,19 @@ import * as TWEEN from '@tweenjs/tween.js'
 import gsap from 'gsap'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+
 import { computed } from 'vue'
 import Store from '../../../store/index.js'
+
 const clock = new THREE.Clock();
+
 
 let player = new THREE.Group()//角色
 let ball = new THREE.Vector3()//保存点击坐标
+
 let distVec; //距离
 let targetVecNorm;
 let colliders = []
@@ -60,9 +67,10 @@ export default class PlayerController {
 
   init() {
     let _this = this
+    _this.initTerrain()
     _this.initPlayer()
     this.scene.add(player)
-
+     
     // this.createCameras()
     window.addEventListener('click', function (ev) {
       _this.rayPlane(ev)
@@ -85,6 +93,17 @@ export default class PlayerController {
     window.addEventListener('keyup', (event) => {
           (_this.keysPressed)[event.key.toLowerCase()] = false
     }, false);
+  }
+  
+  initTerrain() {
+    let dracoLoader = new DRACOLoader() 
+    let gltfLoader = new  GLTFLoader()
+    dracoLoader.setDecoderPath("./draco/gltf/");
+    dracoLoader.setDecoderConfig({type: "js"});
+    gltfLoader.setDRACOLoader(dracoLoader);
+    gltfLoader.load('./RobotExpressive.glb', (gltf) => {
+      console.log('gltf', gltf)
+    })
   }
   
   switchRunToggle () {
