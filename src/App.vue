@@ -159,9 +159,7 @@ const scrollToBottom = () => {
 }
 // 是否再输入
 const handleClickIsInpt = (e) => {
-
   Pinia.useAppStore.setIsInpt(e)
-  console.log("e", e)
 }
 
 const appendMsg = (userName, userMessage) => {

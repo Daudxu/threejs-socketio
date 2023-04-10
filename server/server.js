@@ -48,9 +48,10 @@ io.on('connection', async (socket) => {
             if (index !== -1) {
               roomInfo[roomName].splice(index, 1);
             }
-            socket.leave(roomName); 
             io.to(roomName).emit('system', user + ' Leaving the game ', roomInfo[roomName]);
+            io.to(roomName).emit('removAvatar', user);
             console.log(user + ' Leaving the ' + roomName);
+            socket.leave(roomName); 
         }
       });
     // 接收用户消息,发送相应的房间

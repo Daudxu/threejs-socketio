@@ -72,6 +72,7 @@ export default class PlayerController {
     // });
     _this.setState(this.stateInt)
     _this.socketMessage()
+    _this.socketRemovAvatar()
     // _this.initCSS2DRenderer()
     
     window.addEventListener('keydown', (event) => {
@@ -397,12 +398,19 @@ export default class PlayerController {
   //     default:
   //   }
   // }
-
+  socketRemovAvatar() {
+    this.socket.on('removAvatar', (user) => {
+      let model = this.scene.getObjectByName(user)
+      this.scene.remove(model)
+    })
+  }
   socketMessage() {
     this.socket.on('message', (message) => {
+
       // let walking
       // let idle
       // let run
+
       if (message.id) {
         let model = this.scene.getObjectByName(message.id)
         if (model) {
