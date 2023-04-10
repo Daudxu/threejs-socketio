@@ -7,7 +7,8 @@ import * as TWEEN from '@tweenjs/tween.js'
 import gsap from 'gsap'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-
+import { computed } from 'vue'
+import Store from '../../../store/index.js'
 const clock = new THREE.Clock();
 
 let player = new THREE.Group()//角色
@@ -24,6 +25,7 @@ let labelRenderer
 const runVelocity = 5
 const walkVelocity = 2
 
+let directionOffset, directionOffseta
 export default class PlayerController {
   constructor(scene, camera, orbitControls, renderer, playerModel, socket) {
     this.scene = scene
@@ -37,7 +39,7 @@ export default class PlayerController {
     this.cameraTarget = new THREE.Vector3()
     this.walkDirection = new THREE.Vector3()
     this.rotateAngle = new THREE.Vector3(0, 1, 0)
-
+    this.storeObj  = Store()
     this.target = new THREE.Vector3()
 
     this.radius = 3;
@@ -472,16 +474,16 @@ export default class PlayerController {
     if (this.currentAction != play) {
       this.currentAction = play
     }
-    if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
+    const isInpt = computed(() => this.storeObj.useAppStore.getIsInpt)
+    if ((this.currentAction == 'Run' || this.currentAction == 'Walk') && !isInpt.value) {
       // console.log('player.position.x', player.position.x)
       // 摄像机方向计算
       var angleYCameraDirection = Math.atan2(
               (this.camera.position.x - player.position.x), 
               (this.camera.position.z - player.position.z))
       // 对角线移动角度偏移
-      var directionOffset = this.directionOffset(this.keysPressed, 'back')
-      var directionOffseta = this.directionOffset(this.keysPressed, 'front')
-
+      directionOffset = this.directionOffset(this.keysPressed, 'back')
+      directionOffseta = this.directionOffset(this.keysPressed, 'front')
       // rotate model
       this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
       player.quaternion.rotateTowards(this.rotateQuarternion, 0.2)

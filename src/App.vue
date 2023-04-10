@@ -31,7 +31,7 @@
           </p>
          </div>
          <div class="cl-chat-form">
-            <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(0)" @focus="handleClickIsInpt(1)"  @keyup.enter="handleClickTest" v-model="msg"  />
+            <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
             <button class="cl-send-chat" @click="handleClickTest">Send</button>
          </div>
      </div>
@@ -52,14 +52,17 @@
 import * as THREE from "three";
 import { renderAPI } from "./lib/renderAPI";
 import io from 'socket.io-client'
-import { onMounted, ref, reactive, nextTick } from "vue"
+import { onMounted, ref, reactive, nextTick, computed } from "vue"
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { EffectCards } from 'swiper';
 import 'swiper/css/effect-cards';
 import 'swiper/css';
+import Store from './store/index.js'
 
+const Pinia  = Store()
 const socket = io('ws://localhost:3000');
 
+const isInput = computed(() => Pinia.useAppStore.getIsInpt)
 const isShowCreateAvatar = ref(true)
 let name = ref()
 let users = reactive({
@@ -155,8 +158,10 @@ const scrollToBottom = () => {
   });
 }
 // 是否再输入
-const handleClickIsInpt = () => {
-  
+const handleClickIsInpt = (e) => {
+
+  Pinia.useAppStore.setIsInpt(e)
+  console.log("e", e)
 }
 
 const appendMsg = (userName, userMessage) => {
