@@ -21,8 +21,13 @@ export default class ModuleMain extends BaseMain {
       url: "1.glb"
       // url: "RobotExpressive.glb"
     }
+    let configTerrain = {
+      name: "terrain",
+      url: "metaScene03.glb"
+    }
     this.playerModel = await LoadResources(configPlayer)
-    this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.baseOrbitControls.orbitControls, this.render.renderer, this.playerModel, this.config.socket)
+    this.terrainModel = await LoadResources(configTerrain)
+    this.controlRole = new PlayerController(this.baseScene.scene, this.baseCamera.camera, this.baseOrbitControls.orbitControls, this.render.renderer, this.playerModel, this.terrainModel, this.config.socket)
   }
 
   initMouseMove() {

@@ -34,12 +34,13 @@ const walkVelocity = 2
 
 let directionOffset, directionOffseta
 export default class PlayerController {
-  constructor(scene, camera, orbitControls, renderer, playerModel, socket) {
+  constructor(scene, camera, orbitControls, renderer, playerModel, terrainModel,socket) {
     this.scene = scene
     this.camera = camera
     this.orbitControls = orbitControls
     this.renderer = renderer
     this.player = playerModel
+    this.terrainModel = terrainModel
     this.socket = socket
     this.currentAction = 'Run'
     this.rotateQuarternion = new THREE.Quaternion()
@@ -96,14 +97,9 @@ export default class PlayerController {
   }
   
   initTerrain() {
-    let dracoLoader = new DRACOLoader() 
-    let gltfLoader = new  GLTFLoader()
-    dracoLoader.setDecoderPath("./draco/gltf/");
-    dracoLoader.setDecoderConfig({type: "js"});
-    gltfLoader.setDRACOLoader(dracoLoader);
-    gltfLoader.load('./RobotExpressive.glb', (gltf) => {
-      console.log('gltf', gltf)
-    })
+     console.log('this.terrainModel', this.terrainModel.scene)
+    //  let model = SkeletonUtils.clone(this.player.scene)
+     this.scene.add(this.terrainModel.scene)
   }
   
   switchRunToggle () {
@@ -159,15 +155,16 @@ export default class PlayerController {
   // }
 
   initScenario(scene) {
-    //创建一个地板，如果只有网格，不能得到点击位置的坐标
-    let geometry = new THREE.PlaneGeometry(100, 100)
-    geometry.rotateX(-Math.PI / 2)
-    let mail = new THREE.MeshBasicMaterial({color: 0x696969})
-    let plane = new THREE.Mesh(geometry, mail)
-    plane.name = 'Plane'
-    plane.receiveShadow = true
+    // //创建一个地板，如果只有网格，不能得到点击位置的坐标
+    // let geometry = new THREE.PlaneGeometry(100, 100)
+    // geometry.rotateX(-Math.PI / 2)
+    // let mail = new THREE.MeshBasicMaterial({color: 0x696969})
+    // let plane = new THREE.Mesh(geometry, mail)
+    // plane.name = 'Plane'
+    // plane.receiveShadow = true
+    // console.log('this.terrainModel', this.terrainModel.scene)
+    let plane = SkeletonUtils.clone(this.terrainModel.scene)
     scene.add(plane)
-    this.planeArr.push(plane)
   }
   
   rayPlane(ev) {
