@@ -11,7 +11,6 @@ var io = new Server(server,{ cors: true });
 const cors = require('cors');
 app.use(cors());
 const port = 3000;
-const users = {};
 // 设置一个默认房间
 const roomName = "gameRome"
 var roomInfo = {};
@@ -19,7 +18,7 @@ var roomInfo = {};
 io.on('connection', async (socket) => {
     let total = io.engine.clientsCount;
     let user = '';
-    console.log('服务器连接成功ID:', socket.id);
+    console.log('Server Connection Success ID', socket.id);
     logger.info(total);
     // 加入游戏房间
     socket.on('join', function (userName) {
@@ -32,13 +31,13 @@ io.on('connection', async (socket) => {
         // 加入房间
         socket.join(roomName);
         // 通知房间内人员
-        io.to(roomName).emit('system', user + ' joined Room ' + roomName, roomInfo[roomName]);  
+        io.to(roomName).emit('system', user + ' joined Game ', roomInfo[roomName]);  
         console.log(user + ' joined Room ' + roomName);
     });
     socket.on('message',function (data) {
         socket.broadcast.emit('message', data);
     })
-
+    // 断开
     socket.on('leave', function () {
         socket.emit('disconnect');
     });
@@ -50,8 +49,8 @@ io.on('connection', async (socket) => {
               roomInfo[roomName].splice(index, 1);
             }
             socket.leave(roomName); 
-            io.to(roomName).emit('system', user + ' 退出了房间 ', roomInfo[roomName]);
-            console.log(user + ' 退出了 ' + roomName);
+            io.to(roomName).emit('system', user + ' Leaving the game ', roomInfo[roomName]);
+            console.log(user + ' Leaving the ' + roomName);
         }
       });
     // 接收用户消息,发送相应的房间
@@ -61,25 +60,6 @@ io.on('connection', async (socket) => {
            return false;
         }
         io.to(roomName).emit('roomMessage', user, msg);
-    });
-    socket.on('message', function (msg) {
-        if(msg === "hi") {
-            console.log("===")
-        }
-        
-        // // 验证如果用户不在房间内则不给发送
-        // if (roomInfo[roomName].indexOf(user) === -1) {  
-        //    return false;
-        // }
-        // io.to(roomName).emit('message', user, msg);
-    });
-    // 接收用户游戏角色消息,发送相应的游戏信息到组队房间
-    socket.on('gameInfo', function (msg) {
-        // 验证如果用户不在房间内则不给发送
-        if (roomInfo[roomName].indexOf(user) === -1) {  
-            return false;
-        }
-        io.broadcast.to(roomName).emit('msg', user, msg);
     });
 });
 

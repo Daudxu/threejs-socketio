@@ -25,46 +25,15 @@
   </div>
   <div class="cl-chat">
      <div class="cl-main"> 
-         <div class="cl-chat-content">
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
-          <p>asdasdasdasd</p>
+         <div class="cl-chat-content" ref="chatContent">
+          
+          <p v-for="(item, index) in msgData.list" :key="index" >
+             <span v-html="item"></span>
+          </p>
+          
          </div>
          <div class="cl-chat-form">
-            <input type="text" class="cl-chat-msg" v-model="msg"  />
+            <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(0)" @focus="handleClickIsInpt(1)"  @keyup.enter="handleClickTest" v-model="msg"  />
             <button class="cl-send-chat" @click="handleClickTest">Send</button>
          </div>
      </div>
@@ -85,7 +54,7 @@
 import * as THREE from "three";
 import { renderAPI } from "./lib/renderAPI";
 import io from 'socket.io-client'
-import { onMounted, ref, reactive } from "vue"
+import { onMounted, ref, reactive, nextTick } from "vue"
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { EffectCards } from 'swiper';
 import 'swiper/css/effect-cards';
@@ -99,7 +68,10 @@ let users = reactive({
     list: []
 })
 let msg = ref("")
-
+let msgData = reactive({
+    list: []
+})
+let chatContent = ref()
 const hotZoneData = ref(null)
 const container = ref()
 const playerCount = ref(0)
@@ -123,20 +95,13 @@ onMounted(() => {
   socket.on('connect', () => console.log('connect: websocket 连接成功！'))
   // 监听系统消息
   socket.on('system', function (sysMsg, userList) {
-    var message = '<div class="sysMsg">' + sysMsg + '</div>';
-    console.log("message", message)
-    // $('#msglog').append(message);
+    appendMsg("system", sysMsg)
     playerCount.value = userList.length
     users.list = userList
   });
   // 监听房间消息
   socket.on('roomMessage', function (userName, userMessage) {
-    console.log("用户：" + userName + "说：" + userMessage)
-    // var message = '<div class="sysMsg">' + sysMsg + '</div>';
-    // console.log("message", message)
-    // // $('#msglog').append(message);
-    // playerCount.value = users.length
-    // users.list = userList
+    appendMsg(userName, userMessage)
   });
 
 });
@@ -176,7 +141,30 @@ const initThree = (socket) => {
 }
 // 测试
 const handleClickTest = () => {
-  socket.emit('roomMessage', "A new user has connected!");
+  if(msg.value){
+    socket.emit('roomMessage', msg.value);
+    msg.value = ""
+  }
+}
+// 滚动
+const scrollToBottom = () => {
+  nextTick(() => {
+    let scrollElem = chatContent.value;
+    scrollElem.scrollTo({
+      top: scrollElem.scrollHeight,
+      behavior: 'smooth'
+    });
+  });
+}
+// 是否再输入
+const handleClickIsInpt = () => {
+  
+}
+
+const appendMsg = (userName, userMessage) => {
+  let msgDom = `<span class="cl-sendName">${userName}:&nbsp;</span> <span class="cl-sendMsg">${userMessage} </span>`
+  msgData.list.push(msgDom)
+  scrollToBottom()
 }
 
 </script>
@@ -210,6 +198,17 @@ const handleClickTest = () => {
       -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
       border-radius: 10px;
       background: #EDEDED;
+    }
+    p {
+      span {
+        font-family: 'Inter', sans-serif;
+        color: #000000
+        font-size:17px
+        line-height: 25px
+      }
+      .cl-sendName{
+        color: #ffffff
+      }
     }
   }
   .cl-chat-form {
