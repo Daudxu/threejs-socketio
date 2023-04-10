@@ -57,10 +57,13 @@ io.on('connection', async (socket) => {
     // 接收用户消息,发送相应的房间
     socket.on('roomMessage', function (msg) {
         // 验证如果用户不在房间内则不给发送
-        if (roomInfo[roomName].indexOf(user) === -1) {  
-           return false;
+        if(user){
+            if (roomInfo[roomName].indexOf(user) === -1) {  
+                return false;
+            }
+            io.to(roomName).emit('roomMessage', user, msg);
         }
-        io.to(roomName).emit('roomMessage', user, msg);
+
     });
 });
 
