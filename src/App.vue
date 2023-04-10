@@ -26,11 +26,9 @@
   <div class="cl-chat">
      <div class="cl-main"> 
          <div class="cl-chat-content" ref="chatContent">
-          
           <p v-for="(item, index) in msgData.list" :key="index" >
              <span v-html="item"></span>
           </p>
-          
          </div>
          <div class="cl-chat-form">
             <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(0)" @focus="handleClickIsInpt(1)"  @keyup.enter="handleClickTest" v-model="msg"  />
