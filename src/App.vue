@@ -208,6 +208,11 @@ const appendMsg = (userName, userMessage) => {
         line-height: 25px
       }
       .cl-sendName{
+        font-family: 'Inter', sans-serif;
+        color: #ffffff
+      }
+      .cl-sendMsg {
+        font-family: 'Inter', sans-serif;
         color: #ffffff
       }
     }
