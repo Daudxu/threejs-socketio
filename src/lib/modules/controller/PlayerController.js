@@ -13,7 +13,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 import { computed } from 'vue'
 import Store from '../../../store/index.js'
-
+import Physics from '../../baseFrame/BasePhysics'
 const clock = new THREE.Clock();
 
 
@@ -83,6 +83,7 @@ export default class PlayerController {
     _this.socketMessage()
     _this.socketRemovAvatar()
     // _this.initCSS2DRenderer()
+    _this.addPhysics()
     
     window.addEventListener('keydown', (event) => {
       if (event.shiftKey && _this.player) {
@@ -485,6 +486,12 @@ export default class PlayerController {
     this.cameraTarget.z = player.position.z
     this.orbitControls.target = this.cameraTarget
   }
+
+  addPhysics(planeGroup) {
+    this.physics = new Physics(planeGroup, this.camera, this.scene);
+    return this.physics;
+  }
+
   update=()=> {
     const delta = clock.getDelta();
     const directionPressed = DIRECTIONS.some(key => this.keysPressed[key] == true)
