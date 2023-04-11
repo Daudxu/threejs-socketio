@@ -5,14 +5,22 @@ import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper.js";
 
 import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+let directionOffset, directionOffseta
+
 export default class Physics {
-  constructor(planeGroup, camera, scene) {
+  constructor(planeGroup, camera, scene, player, orbitControls) {
     this.eventPositionList = [];
     this.worldOctree = new Octree();
     this.worldOctree.fromGraphNode(planeGroup);
-
+    this.camera = camera
+    this.player = camera
+    this.orbitControls = orbitControls
+    this.rotateAngle = new THREE.Vector3(0, 1, 0)
+    this.cameraTarget = new THREE.Vector3()
+    this.walkDirection = new THREE.Vector3()
+    this.rotateQuarternion = new THREE.Quaternion()
     // 创建一个octreeHelper
-    // const octreeHelper = new OctreeHelper(worldOctree);
+    // const octreeHelper = new OctreeHelper(this.worldOctree);
     // scene.add(octreeHelper);
 
     // 创建一个人的碰撞体
@@ -28,60 +36,44 @@ export default class Physics {
     this.actions = {};
     // 设置激活动作
     this.activeAction = null;
-    loader.load("./model/RobotExpressive.glb", (gltf) => {
+    loader.load("./1.glb", (gltf) => {
       this.robot = gltf.scene;
-      this.robot.scale.set(0.5, 0.5, 0.5);
+      // this.robot.scale.set(0.5, 0.5, 0.5);
       this.robot.position.set(0, -0.88, 0);
 
       // console.log(gltf);
       this.capsule.add(this.robot);
       this.mixer = new THREE.AnimationMixer(this.robot);
-      for (let i = 0; i < gltf.animations.length; i++) {
-        let name = gltf.animations[i].name;
-        this.actions[name] = this.mixer.clipAction(gltf.animations[i]);
-        if (name == "Idle" || name == "Walking" || name == "Running") {
-          this.actions[name].clampWhenFinished = false;
-          this.actions[name].loop = THREE.LoopRepeat;
-        } else {
-          this.actions[name].clampWhenFinished = true;
-          this.actions[name].loop = THREE.LoopOnce;
-        }
-      }
-      this.activeAction = this.actions["Idle"];
-      this.activeAction.play();
-      console.log(this.actions);
+    //   if(gltf.animations.length > 0) {
+    //     for (let i = 0; i < gltf.animations.length; i++) {
+    //       let name = gltf.animations[i].name;
+    //       this.actions[name] = this.mixer.clipAction(gltf.animations[i]);
+    //       if (name == "Idle" || name == "Walking" || name == "Running") {
+    //         this.actions[name].clampWhenFinished = false;
+    //         this.actions[name].loop = THREE.LoopRepeat;
+    //       } else {
+    //         this.actions[name].clampWhenFinished = true;
+    //         this.actions[name].loop = THREE.LoopOnce;
+    //       }
+    //     }
+    //     this.activeAction = this.actions["Idle"];
+    //     this.activeAction.play();
+    //     console.log(this.actions);
+    //  }
     });
 
     this.capsule = new THREE.Object3D();
     this.capsule.position.set(0, 0.85, 0);
-    const backCamera = new THREE.PerspectiveCamera(
-      70,
-      window.innerWidth / window.innerHeight,
-      0.001,
-      1000
-    );
-    // 将相机作为胶囊的子元素，就可以实现跟随
-    camera.position.set(0, 2, -5);
-    camera.lookAt(this.capsule.position);
-    backCamera.position.set(0, 2, 5);
-    backCamera.lookAt(this.capsule.position);
-    // controls.target = capsule.position;
-    // 控制旋转上下的空3d对象
-    this.capsuleBodyControl = new THREE.Object3D();
-    this.capsuleBodyControl.add(camera);
-    this.capsuleBodyControl.add(backCamera);
-    this.capsule.add(this.capsuleBodyControl);
-
-    // capsule.add(capsuleBody);
 
     scene.add(this.capsule);
 
     // 设置重力
     this.gravity = -9.8;
-    // 玩家的速度
+    // 玩家的速度s
     this.playerVelocity = new THREE.Vector3(0, 0, 0);
     // 方向向量
     this.playerDirection = new THREE.Vector3(0, 0, 0);
+    this.keysPressed = {}
     // 键盘按下事件
     this.keyStates = {
       KeyW: false,
@@ -102,6 +94,7 @@ export default class Physics {
         // console.log(event.code);
         this.keyStates[event.code] = true;
         this.keyStates.isDown = true;
+        (this.keysPressed)[event.key.toUpperCase()] = true
       },
       false
     );
@@ -110,14 +103,7 @@ export default class Physics {
       (event) => {
         this.keyStates[event.code] = false;
         this.keyStates.isDown = false;
-        if (event.code === "KeyV") {
-          this.activeCamera =
-            this.activeCamera === camera ? backCamera : camera;
-        }
-        if (event.code === "KeyT") {
-          // 打招呼
-          this.fadeToAction("Wave");
-        }
+        (this.keysPressed)[event.key.toUpperCase()] = false
       },
       false
     );
@@ -206,55 +192,92 @@ export default class Physics {
     }
   }
   controlPlayer(deltaTime) {
-    if (this.keyStates["KeyW"]) {
-      this.playerDirection.z = 1;
-      //获取胶囊的正前面方向
-      const capsuleFront = new THREE.Vector3(0, 0, 0);
-      this.capsule.getWorldDirection(capsuleFront);
-      // console.log(capsuleFront);
-      // 计算玩家的速度
-      // 当速度超过最大速度时，不操作
-      if (
-        this.playerVelocity.x * this.playerVelocity.x +
-          this.playerVelocity.z * this.playerVelocity.z <=
-        200
-      ) {
-        this.playerVelocity.add(capsuleFront.multiplyScalar(deltaTime * 5));
-      }
-    }
-    if (this.keyStates["KeyS"]) {
-      this.playerDirection.z = 1;
-      //获取胶囊的正前面方向
-      const capsuleFront = new THREE.Vector3(0, 0, 0);
-      this.capsule.getWorldDirection(capsuleFront);
-      // console.log(capsuleFront);
-      // 计算玩家的速度
-      this.playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime));
-    }
-    if (this.keyStates["KeyA"]) {
-      this.playerDirection.x = 1;
-      //获取胶囊的正前面方向
-      const capsuleFront = new THREE.Vector3(0, 0, 0);
-      this.capsule.getWorldDirection(capsuleFront);
+      //  获取相机角度
+      var angleYCameraDirection = Math.atan2(
+              (this.camera.position.x - this.capsule.position.x), 
+              (this.camera.position.z - this.capsule.position.z))
+      var isEmtny = JSON.stringify(this.keysPressed) == "{}"
+      if(!isEmtny){
+        // 对角线移动角度偏移
+        directionOffset = this.directionOffset(this.keysPressed, 'back')
+        directionOffseta = this.directionOffset(this.keysPressed)
+        this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
+        this.capsule.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
 
-      // 侧方的方向，正前面的方向和胶囊的正上方求叉积，求出侧方的方向
-      capsuleFront.cross(this.capsule.up);
-      // console.log(capsuleFront);
-      // 计算玩家的速度
-      this.playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime));
-    }
-    if (this.keyStates["KeyD"]) {
-      this.playerDirection.x = 1;
-      //获取胶囊的正前面方向
-      const capsuleFront = new THREE.Vector3(0, 0, 0);
-      this.capsule.getWorldDirection(capsuleFront);
+        this.camera.getWorldDirection(this.walkDirection)
+        this.walkDirection.y = 0
+        this.walkDirection.normalize()
+        this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffseta)
+        let velocity = 5
+        const moveX = this.walkDirection.x * velocity * deltaTime
+        const moveZ = this.walkDirection.z * velocity * deltaTime
+        // player.position.x += moveX
+        // player.position.z += moveZ
+        // this.updateCameraTarget(moveX, moveZ)
+        this.capsule.x = moveX
+        this.capsule.z = moveZ
+        const capsuleFront = new THREE.Vector3(0, 0, 0);
+        this.capsule.getWorldDirection(capsuleFront);
+        var sa =  capsuleFront.multiplyScalar(deltaTime * 5)
+        sa.x = moveX
+        sa.z = moveZ
+        console.log("capsuleFront.multiplyScalar(deltaTime * 5)", sa)
+        this.playerVelocity.add(sa)
+      }       
+ 
+    
+    // if (this.keyStates["KeyW"]) {
+    //   this.playerDirection.z = 1;
+    //   //获取胶囊的正前面方向
+    //   const capsuleFront = new THREE.Vector3(0, 0, 0);
+    //   // this.capsule.getWorldDirection(capsuleFront);
+    //   this.capsule.getWorldDirection(capsuleFront);
+    //   console.log('capsuleFront--W', capsuleFront);
+    //   // 计算玩家的速度
+    //   // 当速度超过最大速度时，不操作
+    //   if (
+    //     this.playerVelocity.x * this.playerVelocity.x +
+    //       this.playerVelocity.z * this.playerVelocity.z <=
+    //     200
+    //   ) {
+    //     this.playerVelocity.add(capsuleFront.multiplyScalar(deltaTime * 5));
+    //   }
+    // }
+    // if (this.keyStates["KeyS"]) {
+    //   this.playerDirection.z = 1;
+    //   //获取胶囊的正前面方向
+    //   const capsuleFront = new THREE.Vector3(0, 0, 0);
+    //   this.capsule.getWorldDirection(capsuleFront);
+    //   console.log('capsuleFront--S', capsuleFront);
+    //   // 计算玩家的速度
+    //   this.playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime));
+    //   console.log('this.keysPressed', this.keysPressed)
+    // }
+    // if (this.keyStates["KeyA"]) {
+    //   this.playerDirection.x = 1;
 
-      // 侧方的方向，正前面的方向和胶囊的正上方求叉积，求出侧方的方向
-      capsuleFront.cross(this.capsule.up);
-      // console.log(capsuleFront);
-      // 计算玩家的速度
-      this.playerVelocity.add(capsuleFront.multiplyScalar(deltaTime));
-    }
+    //   //获取胶囊的正前面方向
+    //   const capsuleFront = new THREE.Vector3(0, 0, 0);
+    //   this.capsule.getWorldDirection(capsuleFront);
+
+    //   // 侧方的方向，正前面的方向和胶囊的正上方求叉积，求出侧方的方向
+    //   capsuleFront.cross(this.capsule.up);
+    //   // console.log(capsuleFront);
+    //   // 计算玩家的速度
+    //   this.playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime));
+    // }
+    // if (this.keyStates["KeyD"]) {
+    //   this.playerDirection.x = 1;
+    //   //获取胶囊的正前面方向
+    //   const capsuleFront = new THREE.Vector3(0, 0, 0);
+    //   this.capsule.getWorldDirection(capsuleFront);
+
+    //   // 侧方的方向，正前面的方向和胶囊的正上方求叉积，求出侧方的方向
+    //   capsuleFront.cross(this.capsule.up);
+    //   // console.log(capsuleFront);
+    //   // 计算玩家的速度
+    //   this.playerVelocity.add(capsuleFront.multiplyScalar(deltaTime));
+    // }
     if (this.keyStates["Space"]) {
       this.playerVelocity.y = 5;
     }
@@ -266,7 +289,27 @@ export default class Physics {
     if (this.mixer) {
       this.mixer.update(delta);
     }
+    // this.updateCameraTarget()
+    // this.camera.lookAt(this.capsule.position);
+    // this.camera.position.x = this.walkDirection.x
+    // this.camera.position.z = this.walkDirection.z
+    // this.camera.position.y = this.capsule.position.y
+    this.cameraTarget.x = this.capsule.x
+    this.cameraTarget.y = this.capsule.y + 1
+    this.cameraTarget.z = this.capsule.z
+    this.orbitControls.target = this.capsule.position
     this.emitPositionEvent();
+  }
+  updateCameraTarget(moveX, moveZ) {
+    // move camera
+    this.camera.position.x += moveX
+    this.camera.position.z += moveZ
+  
+    // update camera target
+    this.cameraTarget.x = player.position.x
+    this.cameraTarget.y = player.position.y + 1
+    this.cameraTarget.z = player.position.z
+    this.orbitControls.target = this.capsule.position
   }
   emitPositionEvent() {
     this.eventPositionList.forEach((item, i) => {
@@ -300,5 +343,57 @@ export default class Physics {
       isInner: false,
       radius,
     });
+  }
+
+  // front, back, left, right
+  directionOffset(keysPressed, toward = "front" ) {
+
+    if(toward === 'front'){
+        var directionOffset = 0 // w
+
+        if (keysPressed.W) {
+            if (keysPressed.A) {
+                directionOffset = Math.PI / 4 // w+a
+            } else if (keysPressed.D) {
+                directionOffset = - Math.PI / 4 // w+d
+            }
+        } else if (keysPressed.S) {
+            if (keysPressed.A) {
+                directionOffset = Math.PI / 4 + Math.PI / 2 // s+a
+            } else if (keysPressed.D) {
+                directionOffset = -Math.PI / 4 - Math.PI / 2 // s+d
+            } else {
+                directionOffset = Math.PI // s
+            }
+        } else if (keysPressed.A) {
+            directionOffset = Math.PI / 2 // a
+        } else if (keysPressed.D) {
+            directionOffset = - Math.PI / 2 // d
+        }
+        return directionOffset
+    }else if(toward === 'back'){
+
+        var directionOffset = Math.PI  // w
+        if (keysPressed.W) {
+            if (keysPressed.A) {
+                directionOffset = -Math.PI / 4 - Math.PI / 2  // w+a
+            } else if (keysPressed.D) {
+                directionOffset =  Math.PI / 4 + Math.PI / 2 // w+d
+            }
+        } else if (keysPressed.S) {
+            if (keysPressed.A) {
+                directionOffset = Math.PI / 4 - Math.PI / 2 // s+a
+            } else if (keysPressed.D) {
+                directionOffset =  - Math.PI / 4 + Math.PI / 2// s+d
+            } else {
+                directionOffset = 0 // s
+            }
+        } else if (keysPressed.A) {
+            directionOffset = -Math.PI / 2 // a
+        } else if (keysPressed.D) {
+            directionOffset =  Math.PI / 2 // d
+        }
+        return directionOffset
+    }
   }
 }

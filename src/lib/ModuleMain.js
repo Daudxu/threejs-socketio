@@ -31,26 +31,10 @@ export default class ModuleMain extends BaseMain {
   }
 
   initMouseMove() {
-    let that = this
+    // let that = this
     document.documentElement.oncontextmenu = () => {
       return false;
     };
-    window.onmousedown = function (ev) {
-      if (ev.button == 2) {
-        ev.cancelBubble = true
-        ev.returnvalue = false;
-        document.onmousemove = (ev) => {
-          that.controlRole.handleMouseMove(ev, ev.movementX, ev.movementY);
-        }
-        document.onmouseup = (ev) => {
-          document.onmousemove = null
-          document.onmouseup = null
-        }
-      }
-    };
-    window.onmousewheel = function (e) {
-      that.controlRole.handleOnmouseWheel(e)
-    }
   }
 
   initAnimate = () => {

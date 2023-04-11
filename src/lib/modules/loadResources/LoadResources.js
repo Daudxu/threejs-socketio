@@ -10,6 +10,7 @@ export  function LoadResources(config) {
     dracoLoader.preload();
     gltfLoader.setDRACOLoader(dracoLoader);
     gltfLoader.load(config.url, gltf => {
+      // console.log("config.url", config.url, "gltf", gltf)
       //阴影
       gltf.scene.traverse(function (object) {
         if (object.isMesh) object.castShadow = true;
