@@ -72,7 +72,7 @@ export default class PlayerController {
   init() {
     let _this = this
     // _this.initPlayer()
-    this.scene.add(player)
+    // this.scene.add(player)
     _this.setState(this.stateInt)
     _this.socketMessage()
     _this.socketRemovAvatar()
@@ -232,57 +232,57 @@ export default class PlayerController {
     })
   }
   socketMessage() {
-    this.socket.on('message', (message) => {
+    // this.socket.on('message', (message) => {
 
-      // let walking
-      // let idle
-      // let run
+    //   // let walking
+    //   // let idle
+    //   // let run
 
-      if (message.id) {
-        let model = this.scene.getObjectByName(message.id)
-        if (model) {
-          model.position.set(message.playerPosition.x, message.playerPosition.y, message.playerPosition.z)
-          if (message.playerQuaternion) {
-            model.quaternion.set(message.playerQuaternion._x,message.playerQuaternion._y,message.playerQuaternion._z,message.playerQuaternion._w)
-          }
-          // if(this.playerAnimationsArr.length>0){
-          //   this.playerAnimationsArr.forEach(item=>{
-          //     if(item.name==model.name){
-          //       switch (message.state) {
-                  // case "idle":
-                  //   item.action.run.stop()
-                  //   item.action.idle.play()
-                  //   break
-                  // case "run":
-                  //   item.action.idle.stop()
-                  //   item.action.run.play()
-                  //   break
-          //       }
-          //     }
-          //   })
-          // }
-        } else {
-          let model = SkeletonUtils.clone(this.player.scene)
-          model.name = message.id
-          // let mixer = new THREE.AnimationMixer(model)
-          // walking = mixer.clipAction(this.player.animations[10])
-          // idle = mixer.clipAction(this.player.animations[2])
-          // run = mixer.clipAction(this.player.animations[6])
-          // let obj={
-          //   name:message.id,
-          //   action : {
-          //     walking: walking,
-          //     idle: idle,
-          //     run: run
-          //   }
-          // }
-          // this.playerAnimationsArr.push(obj)
-          // this.create2DObject(message.id, model, 'update')
-          this.scene.add(model)
-          // mixers.push(mixer)
-        }
-      }
-    });
+    //   if (message.id) {
+    //     let model = this.scene.getObjectByName(message.id)
+    //     if (model) {
+    //       model.position.set(message.playerPosition.x, message.playerPosition.y, message.playerPosition.z)
+    //       if (message.playerQuaternion) {
+    //         model.quaternion.set(message.playerQuaternion._x,message.playerQuaternion._y,message.playerQuaternion._z,message.playerQuaternion._w)
+    //       }
+    //       // if(this.playerAnimationsArr.length>0){
+    //       //   this.playerAnimationsArr.forEach(item=>{
+    //       //     if(item.name==model.name){
+    //       //       switch (message.state) {
+    //               // case "idle":
+    //               //   item.action.run.stop()
+    //               //   item.action.idle.play()
+    //               //   break
+    //               // case "run":
+    //               //   item.action.idle.stop()
+    //               //   item.action.run.play()
+    //               //   break
+    //       //       }
+    //       //     }
+    //       //   })
+    //       // }
+    //     } else {
+    //       let model = SkeletonUtils.clone(this.player.scene)
+    //       model.name = message.id
+    //       // let mixer = new THREE.AnimationMixer(model)
+    //       // walking = mixer.clipAction(this.player.animations[10])
+    //       // idle = mixer.clipAction(this.player.animations[2])
+    //       // run = mixer.clipAction(this.player.animations[6])
+    //       // let obj={
+    //       //   name:message.id,
+    //       //   action : {
+    //       //     walking: walking,
+    //       //     idle: idle,
+    //       //     run: run
+    //       //   }
+    //       // }
+    //       // this.playerAnimationsArr.push(obj)
+    //       // this.create2DObject(message.id, model, 'update')
+    //       this.scene.add(model)
+    //       // mixers.push(mixer)
+    //     }
+    //   }
+    // });
   }
 
    updateCameraTarget(moveX, moveZ) {

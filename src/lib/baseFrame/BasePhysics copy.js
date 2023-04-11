@@ -93,6 +93,28 @@ export default class Physics {
 
     // 玩家是否在地面上
     this.playerOnFloor = false;
+
+    // 根据键盘按下的键来更新键盘的状态
+    // document.addEventListener(
+    //   "keydown",
+    //   (event) => {
+    //     console.log("keydown===", event.code);
+    //     this.keyStates[event.code] = true;
+    //     this.keyStates.isDown = true;
+    //     (this.keysPressed)[event.key.toUpperCase()] = true
+    //   },
+    //   false
+    // );
+    // document.addEventListener(
+    //   "keyup",
+    //   (event) => {
+    //     console.log("keyup===", event.code);
+    //     this.keyStates[event.code] = false;
+    //     this.keyStates.isDown = false;
+    //     (this.keysPressed)[event.key.toUpperCase()] = false
+    //   },
+    //   false
+    // );
     this.init()
   }
 
@@ -294,17 +316,30 @@ export default class Physics {
     }
   }
   update(delta) {
-    const STEPS_PER_FRAME = 2
-    const deltaTime = Math.min( 0.009, delta ) / STEPS_PER_FRAME;
+    const STEPS_PER_FRAME = 3
     for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
-      this.controlPlayer(deltaTime);
-      this.updatePlayer(deltaTime);
+      this.controlPlayer(delta);
+      this.updatePlayer(delta);
       this.resetPlayer();
       if (this.mixer) {
-        this.mixer.update(deltaTime);
+        this.mixer.update(delta);
       }
     }
-
+    // this.controlPlayer(delta);
+    // this.updatePlayer(delta);
+    // this.resetPlayer();
+    if (this.mixer) {
+      this.mixer.update(delta);
+    }
+    // this.updateCameraTarget()
+    // this.camera.lookAt(this.capsule.position);
+    // this.camera.position.x = this.walkDirection.x
+    // this.camera.position.z = this.walkDirection.z
+    // this.camera.position.y = this.capsule.position.y
+    // this.cameraTarget.x = this.capsule.x
+    // this.cameraTarget.y = this.capsule.y + 1
+    // this.cameraTarget.z = this.capsule.z
+    // this.orbitControls.target = this.capsule.position
     this.emitPositionEvent();
   }
   updateCameraTarget(moveX, moveZ) {
