@@ -7,6 +7,8 @@ import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import Store from '../../store/index.js'
 import { computed } from 'vue'
+// import {  }
+
 
 let directionOffset, directionOffseta
 const keyStates = {};
@@ -135,7 +137,6 @@ export default class Physics {
 
     // 进行碰撞检测
     this.playerCollisions();
-
     // console.log(Math.abs(playerVelocity.x) + Math.abs(playerVelocity.z));
     // 如果有水平的运动，则设置运动的动作
     if (
