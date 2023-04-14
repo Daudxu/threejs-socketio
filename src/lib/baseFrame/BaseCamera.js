@@ -13,7 +13,7 @@ export default class BaseCamera {
   initCamera() {
     let _this = this
     _this.camera = new THREE.PerspectiveCamera(65, _this.container.clientWidth / _this.container.clientHeight, 0.1, 1000 );
-    _this.camera.position.set(0, 5, 50)
+    _this.camera.position.set(0, 15, 15)
 
   }
 

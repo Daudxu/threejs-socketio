@@ -1,7 +1,7 @@
 import BaseScene from './BaseScene'
 import BaseCamera from './BaseCamera'
 import BaseOrbitControls from './BaseOrbitControls'
-
+import BasePhysics from './BasePhysics'
 import BaseRenderer from './BaseRenderer'
 
 
@@ -19,7 +19,7 @@ class BaseMain {
     this.render=new BaseRenderer(container)
     this.baseCamera = new BaseCamera(container,this.render);
     this.baseOrbitControls = new BaseOrbitControls(this.baseCamera.camera, this.render.renderer);
-
+    this.basePhysics = new BasePhysics()
     this.screenAdaptationMonitoring()
   }
   screenAdaptationMonitoring(){

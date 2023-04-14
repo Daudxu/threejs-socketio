@@ -13,12 +13,12 @@ export default class BaseOrbitControls {
   initOrbitControls(camera, renderer) {
     this.orbitControls = new OrbitControls(camera, renderer.domElement);
     this.orbitControls.enableDamping = true
-    this.orbitControls.target.set(0, 5, 5)
+    // this.orbitControls.target.set(0, 7, 7)
     // 是否禁止缩放
-    this.orbitControls.enableZoom = false
+    this.orbitControls.enableZoom = true
     // 缩放限制
-    this.orbitControls.minDistance = 5
-    this.orbitControls.maxDistance = 15
+    this.orbitControls.minDistance = 7
+    this.orbitControls.maxDistance = 37
     // 限制最大仰视角和俯视角
     this.orbitControls.minPolarAngle = 0
     this.orbitControls.maxPolarAngle = 1.5
