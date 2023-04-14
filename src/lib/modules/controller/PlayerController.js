@@ -152,7 +152,7 @@ export default class PlayerController {
     let _this = this
     const boxMateralCon = new CANNON.Material("boxMaterial");
     boxMateralCon.friction = 100
-    // boxMateralCon.restitution = 0
+    boxMateralCon.restitution = 1
     let plane = SkeletonUtils.clone(this.terrainModel.scene)
     plane.position.set(10.8 , -2.2, 8.5)
     plane.traverse(async (child) => {
@@ -177,10 +177,13 @@ export default class PlayerController {
       }
     })
     scene.add(plane)
+    const boxMateralCon1 = new CANNON.Material("boxMaterial");
+    boxMateralCon1.friction = 100
+    boxMateralCon1.restitution = 0
     this.capsuleBody = new CANNON.Body({
       mass: 1,
       position: new CANNON.Vec3(0, 0, -5),
-      material: boxMateralCon,
+      material: boxMateralCon1,
       collisionFilterGroup: GROUP2,
       collisionFilterMask: GROUP1
     })
