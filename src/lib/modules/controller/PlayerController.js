@@ -194,6 +194,9 @@ export default class PlayerController {
     this.capsuleBody.addShape(sphereShape, new CANNON.Vec3(0, 0, 0))
     // this.capsuleBody.addShape(cylinderShape, new CANNON.Vec3(0, 0, 0))
     // this.capsuleBody.addShape(sphereShape, new CANNON.Vec3(0, -0.75, 0))
+    this.capsuleBody
+    this.capsuleBody.body.fixedRotation = true;
+		this.capsuleBody.body.updateMassProperties();
     this.physics.addBody(this.capsuleBody)
   }
 
