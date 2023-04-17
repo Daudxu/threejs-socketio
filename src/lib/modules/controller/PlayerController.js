@@ -96,7 +96,7 @@ export default class PlayerController {
 			position: new CANNON.Vec3(0, 1, 0),
 			height: 0.5,
 			radius: 0.25,
-			segments: 8,
+			segments: 8, 
 			friction: 0.0
 		});
     // console.log()
