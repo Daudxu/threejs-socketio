@@ -23,7 +23,7 @@ export default class ModuleMain extends BaseMain {
     }
     let configTerrain = {
       name: "terrain",
-      url: "metaScene03.glb"
+      url: "./model/12.glb"
     }
     this.playerModel = await LoadResources(configPlayer)
     this.terrainModel = await LoadResources(configTerrain)

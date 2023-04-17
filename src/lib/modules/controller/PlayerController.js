@@ -11,11 +11,13 @@ import * as CANNON from "cannon-es"
 import CannonDebugger from 'cannon-es-debugger'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-
+import { CapsuleCollider } from '../../physics/CapsuleCollider';
 import { computed } from 'vue'
 import Store from '../../../store/index.js'
 import Physics from '../../baseFrame/BasePhysics'
-
+import { CollisionGroups } from '../../../enums/CollisionGroups';
+import { GroundImpactData } from '../../characters/GroundImpactData';
+import * as Utils from '../../core/FunctionLibrary';
 const GROUP1 = 1;
 const GROUP2 = 2;
 const clock = new THREE.Clock();
@@ -38,6 +40,24 @@ const walkVelocity = 2
 
 let directionOffset, directionOffseta
 export default class PlayerController {
+  // Ray casting
+  rayResult = new CANNON.RaycastResult();
+  rayHasHit = false;
+  rayCastLength = 0.57;
+  raySafeOffset  = 0.03;
+  wantsToJump = false;
+  initJumpSpeed = -1;
+	groundImpactData = new GroundImpactData();
+  arcadeVelocityIsAdditive = false;
+  orientation = new THREE.Vector3(0, 0, 1);
+  orientationTarget = new THREE.Vector3(0, 0, 1);
+  arcadeVelocityInfluence = new THREE.Vector3();
+	raycastBox;
+  velocity = new THREE.Vector3();
+	world;
+	charState;
+	behaviour;
+	
   constructor(scene, camera, orbitControls, renderer, physics, playerModel, terrainModel, socket) {
     this.scene = scene
     this.camera = camera
@@ -66,13 +86,248 @@ export default class PlayerController {
     this.playerAnimationsArr = []
     this.planeArr=[]
     this.toggleRun = true
+  
+    this.keysPressed = {}
+    // start
+    // Physics
+		// 物理碰撞的角色胶囊
+		this.characterCapsule = new CapsuleCollider({
+			mass: 1,
+			position: new CANNON.Vec3(0, 1, 0),
+			height: 0.5,
+			radius: 0.25,
+			segments: 8,
+			friction: 0.0
+		});
+    // console.log()
+		// capsulePhysics.physical.collisionFilterMask = ~CollisionGroups.Trimesh;
+		// 设置能够碰撞的碰撞组
+		this.characterCapsule.body.shapes.forEach((shape) => {
+			// tslint:disable-next-line: no-bitwise
+			shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders;
+		});
+		// 可以允许休眠
+		this.characterCapsule.body.allowSleep = false;
+
+		// Move character to different collision group for raycasting
+		// 设置碰撞组
+		this.characterCapsule.body.collisionFilterGroup = 2;
+
+		// Disable character rotation
+		// 是否禁用角色旋转
+		this.characterCapsule.body.fixedRotation = true;
+		this.characterCapsule.body.updateMassProperties();
+
+		// Ray cast debug
+		const boxGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+		const boxMat = new THREE.MeshLambertMaterial({
+			color: 0xff0000
+		});
+		this.raycastBox = new THREE.Mesh(boxGeo, boxMat);
+		this.raycastBox.visible = true;
+
+		// Physics pre/post step callback bindings
+    var _this = this
+    setInterval(()=>{
+      _this.characterCapsule.body.preStep = _this.physicsPreStep(_this.characterCapsule.body, _this);
+      _this.characterCapsule.body.postStep = _this.physicsPostStep(_this.characterCapsule.body, _this);
+    },100)
+		// this.characterCapsule.body.postStep = (body) => { this.physicsPostStep(body, this) };
+    // this.characterCapsule.body.preStep = as()
+    // var _this = this
+
+    // this.characterCapsule.body.preStep = computed(() => this.physicsPreStep(this.characterCapsule.body, this))
+		// this.characterCapsule.body.postStep = this.physicsPostStep(this.characterCapsule.body, this);
+    // end
+    this.scene.add(this.raycastBox)
     this.init()
     this.initScenario(this.scene)
     this.initSky()
-    this.keysPressed = {}
-
-
   }
+  feetRaycast()
+	{
+		// Player ray casting
+		// Create ray
+		let body = this.characterCapsule.body;
+		const start = new CANNON.Vec3(body.position.x, body.position.y, body.position.z);
+		const end = new CANNON.Vec3(body.position.x, body.position.y - this.rayCastLength - this.raySafeOffset, body.position.z);
+		// Raycast options
+		const rayCastOptions = {
+			collisionFilterMask: CollisionGroups.Default,
+			skipBackfaces: true      /* ignore back faces */
+		};
+		// 在物理世界中找到与射线相交的第一个刚体
+		this.rayHasHit = this.physics.raycastClosest(start, end, rayCastOptions, this.rayResult);
+    console.log("this.rayHasHit", this.rayHasHit )
+		// console.log(this.rayResult);
+	}
+
+  physicsPreStep(body, character)
+	{
+    // console.log(111)
+		character.feetRaycast();
+
+		// Raycast debug
+		if (character.rayHasHit)
+		{
+			// console.log('Raycast hit');
+			// console.log(body.position)
+			if (character.raycastBox.visible) {
+				character.raycastBox.position.x = character.rayResult.hitPointWorld.x;
+				character.raycastBox.position.y = character.rayResult.hitPointWorld.y;
+				character.raycastBox.position.z = character.rayResult.hitPointWorld.z;
+			}
+		}
+		else
+		{
+			// console.log('Raycast miss');
+			if (character.raycastBox.visible) {
+				character.raycastBox.position.set(body.position.x, body.position.y - character.rayCastLength - character.raySafeOffset, body.position.z);
+			}
+			// console.log('Raycast miss',body.position, character.rayCastLength, character.raySafeOffset);
+		}
+    console.log("character.raycastBox.position", character.raycastBox.position)
+	}
+
+  physicsPostStep(body, character)
+	{
+		// console.log('Post step');
+		// Get velocities
+		// 获取速度
+		let simulatedVelocity = new THREE.Vector3(body.velocity.x, body.velocity.y, body.velocity.z);
+    
+		// Take local velocity
+		// 获取局部速度
+		let arcadeVelocity = new THREE.Vector3().copy(character.velocity).multiplyScalar(character.moveSpeed);
+		// Turn local into global
+		// 将局部速度转换为全局速度
+		arcadeVelocity = Utils.appplyVectorMatrixXZ(character.orientation, arcadeVelocity);
+   
+		let newVelocity = new THREE.Vector3();
+  
+		// Additive velocity mode
+		// 附加的速度模式
+		if (character.arcadeVelocityIsAdditive)
+		{
+			newVelocity.copy(simulatedVelocity);
+
+			let globalVelocityTarget = Utils.appplyVectorMatrixXZ(character.orientation, character.velocityTarget);
+			let add = new THREE.Vector3().copy(arcadeVelocity).multiply(character.arcadeVelocityInfluence);
+
+			if (Math.abs(simulatedVelocity.x) < Math.abs(globalVelocityTarget.x * character.moveSpeed) || Utils.haveDifferentSigns(simulatedVelocity.x, arcadeVelocity.x)) { newVelocity.x += add.x; }
+			if (Math.abs(simulatedVelocity.y) < Math.abs(globalVelocityTarget.y * character.moveSpeed) || Utils.haveDifferentSigns(simulatedVelocity.y, arcadeVelocity.y)) { newVelocity.y += add.y; }
+			if (Math.abs(simulatedVelocity.z) < Math.abs(globalVelocityTarget.z * character.moveSpeed) || Utils.haveDifferentSigns(simulatedVelocity.z, arcadeVelocity.z)) { newVelocity.z += add.z; }
+		}
+		else
+		{
+			newVelocity = new THREE.Vector3(
+				THREE.MathUtils.lerp(simulatedVelocity.x, arcadeVelocity.x, character.arcadeVelocityInfluence.x),
+				THREE.MathUtils.lerp(simulatedVelocity.y, arcadeVelocity.y, character.arcadeVelocityInfluence.y),
+				THREE.MathUtils.lerp(simulatedVelocity.z, arcadeVelocity.z, character.arcadeVelocityInfluence.z),
+			);
+		}
+    console.log("========return false===", character.rayHasHit)
+    if (character.rayHasHit){
+      console.log("========11111111===", character.rayHasHit)
+    }else{
+    			// If we're in air
+			body.velocity.x = newVelocity.x;
+			body.velocity.y = newVelocity.y;
+			body.velocity.z = newVelocity.z;
+
+			// Save last in-air information
+			character.groundImpactData.velocity.x = body.velocity.x;
+			character.groundImpactData.velocity.y = body.velocity.y;
+			character.groundImpactData.velocity.z = body.velocity.z;
+    }
+      return false
+		// If we're hitting the ground, stick to ground
+		// 如果我们碰到地面，就贴着地面
+		if (character.rayHasHit)
+		{
+      console.log("========return false===", character.rayHasHit)
+      return false
+			// Flatten velocity
+			newVelocity.y = 0;
+
+			// Move on top of moving objects
+			// 在移动对象的顶部移动
+			if (character.rayResult.body.mass > 0)
+			{
+				let pointVelocity = new CANNON.Vec3();
+				character.rayResult.body.getVelocityAtWorldPoint(character.rayResult.hitPointWorld, pointVelocity);
+				newVelocity.add(Utils.threeVector(pointVelocity));
+			}
+
+			// Measure the normal vector offset from direct "up" vector
+			// and transform it into a matrix
+			// 测量法线矢量与直接“向上”矢量的偏移量，并将其转换为矩阵
+			let up = new THREE.Vector3(0, 1, 0);
+			let normal = new THREE.Vector3(character.rayResult.hitNormalWorld.x, character.rayResult.hitNormalWorld.y, character.rayResult.hitNormalWorld.z);
+			let q = new THREE.Quaternion().setFromUnitVectors(up, normal);
+			let m = new THREE.Matrix4().makeRotationFromQuaternion(q);
+
+			// Rotate the velocity vector
+			// 旋转速度矢量
+			newVelocity.applyMatrix4(m);
+
+			// Compensate for gravity
+			// 补偿重力
+			// newVelocity.y -= body.world.physicsWorld.gravity.y / body.character.world.physicsFrameRate;
+
+			// Apply velocity
+			// 应用速度
+			body.velocity.x = newVelocity.x;
+			body.velocity.y = newVelocity.y;
+			body.velocity.z = newVelocity.z;
+			// Ground character
+			body.position.y = character.rayResult.hitPointWorld.y + character.rayCastLength + (newVelocity.y / character.world.physicsFrameRate);
+		}
+		else
+		{
+			// If we're in air
+			body.velocity.x = newVelocity.x;
+			body.velocity.y = newVelocity.y;
+			body.velocity.z = newVelocity.z;
+
+			// Save last in-air information
+			character.groundImpactData.velocity.x = body.velocity.x;
+			character.groundImpactData.velocity.y = body.velocity.y;
+			character.groundImpactData.velocity.z = body.velocity.z;
+		}
+
+    return false
+		// Jumping
+		if (character.wantsToJump)
+		{
+			// If initJumpSpeed is set
+			// 如果设置了初始的跳跃速度
+			if (character.initJumpSpeed > -1)
+			{
+				// Flatten velocity
+				body.velocity.y = 0;
+				let speed = Math.max(character.velocitySimulator.position.length() * 4, character.initJumpSpeed);
+				body.velocity = Utils.cannonVector(character.orientation.clone().multiplyScalar(speed));
+			}
+			else {
+				// Moving objects compensation
+				// 移动对象补偿
+				let add = new CANNON.Vec3();
+				character.rayResult.body.getVelocityAtWorldPoint(character.rayResult.hitPointWorld, add);
+				body.velocity.vsub(add, body.velocity);
+			}
+
+			// Add positive vertical velocity 
+			// 添加正垂直速度
+			body.velocity.y += 4;
+			// Move above ground by 2x safe offset value
+			// 在地面上移动2倍安全偏移值
+			body.position.y += character.raySafeOffset * 2;
+			// Reset flag
+			// 重置想要跳跃标志
+			character.wantsToJump = false;
+		}
+	}
 
   init() {
     let _this = this
@@ -154,7 +409,7 @@ export default class PlayerController {
     boxMateralCon.friction = 100
     boxMateralCon.restitution = 1
     let plane = SkeletonUtils.clone(this.terrainModel.scene)
-    plane.position.set(10.8 , -2.2, 8.5)
+    // plane.position.set(10.8 , -2.2, 8.5)
     plane.traverse(async (child) => {
       if(child.isMesh){
         var attributes = await child.geometry
@@ -177,27 +432,10 @@ export default class PlayerController {
       }
     })
     scene.add(plane)
-    const boxMateralCon1 = new CANNON.Material("boxMaterial");
-    boxMateralCon1.friction = 100
-    boxMateralCon1.restitution = 0
-    this.capsuleBody = new CANNON.Body({
-      mass: 1,
-      position: new CANNON.Vec3(0, 0, -5),
-      material: boxMateralCon1,
-      collisionFilterGroup: GROUP2,
-      collisionFilterMask: GROUP1
-    })
-    // 球形几何体
-    const sphereShape = new CANNON.Sphere(0.5);  
-    // 创建圆柱几何体
-    const cylinderShape = new CANNON.Cylinder(0.5, 0.5, 1.5, 20);
-    this.capsuleBody.addShape(sphereShape, new CANNON.Vec3(0, 0, 0))
-    // this.capsuleBody.addShape(cylinderShape, new CANNON.Vec3(0, 0, 0))
-    // this.capsuleBody.addShape(sphereShape, new CANNON.Vec3(0, -0.75, 0))
-    // this.capsuleBody 
-    this.capsuleBody.body.fixedRotation = true;
-		this.capsuleBody.body.updateMassProperties();
-    this.physics.addBody(this.capsuleBody)
+
+    this.physics.addBody(this.characterCapsule.body)
+
+ 
   }
 
    // front, back, left, right
@@ -389,8 +627,8 @@ export default class PlayerController {
   update=()=> {
     const delta = clock.getDelta();
     this.physics.step(1 / 60, delta);
-    if(this.capsuleBody){
-      player.position.copy(this.capsuleBody.position)
+    if(this.characterCapsule.body.position){
+      player.position.copy(this.characterCapsule.body.position)
       // player.quaternion.copy(this.capsuleBody.quaternion)
     }
 
@@ -432,8 +670,8 @@ export default class PlayerController {
       // move model & camera
       const moveX = this.walkDirection.x * velocity * delta
       const moveZ = this.walkDirection.z * velocity * delta
-      this.capsuleBody.position.x += moveX
-      this.capsuleBody.position.z += moveZ
+      this.characterCapsule.body.position.x += moveX
+      this.characterCapsule.body.position.z += moveZ
       this.updateCameraTarget(moveX, moveZ)
   }
     // labelRenderer.render( this.scene, this.camera );
