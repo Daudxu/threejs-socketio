@@ -93,7 +93,7 @@ export default class PlayerController {
 		// 物理碰撞的角色胶囊
 		this.characterCapsule = new CapsuleCollider({
 			mass: 1,
-			position: new CANNON.Vec3(0, 1, 0),
+      position: new CANNON.Vec3(),
 			height: 0.5,
 			radius: 0.25,
 			segments: 8, 
@@ -204,8 +204,9 @@ export default class PlayerController {
 		arcadeVelocity = Utils.appplyVectorMatrixXZ(character.orientation, arcadeVelocity);
    
 		let newVelocity = new THREE.Vector3();
-  
+    return false
 		// Additive velocity mode
+    character.arcadeVelocityIsAdditive = true
 		// 附加的速度模式
 		if (character.arcadeVelocityIsAdditive)
 		{
@@ -240,7 +241,7 @@ export default class PlayerController {
 			character.groundImpactData.velocity.y = body.velocity.y;
 			character.groundImpactData.velocity.z = body.velocity.z;
     }
-      return false
+
 		// If we're hitting the ground, stick to ground
 		// 如果我们碰到地面，就贴着地面
 		if (character.rayHasHit)
@@ -431,9 +432,10 @@ export default class PlayerController {
         }
       }
     })
-    scene.add(plane)
 
+    scene.add(plane)
     this.physics.addBody(this.characterCapsule.body)
+ 
 
  
   }
