@@ -241,14 +241,14 @@ export const haveDifferentSigns = (n1, n2) =>
 // 	return new SimulationFrame(position, velocity);
 // }
 
-// export function springV(source: THREE.Vector3, dest: THREE.Vector3, velocity: THREE.Vector3, mass: number, damping: number): void
-// {
-// 	let acceleration = new THREE.Vector3().subVectors(dest, source);
-// 	acceleration.divideScalar(mass);
-// 	velocity.add(acceleration);
-// 	velocity.multiplyScalar(damping);
-// 	source.add(velocity);
-// }
+export function springV(source, dest, velocity, mass, damping)
+{
+	let acceleration = new THREE.Vector3().subVectors(dest, source);
+	acceleration.divideScalar(mass);
+	velocity.add(acceleration);
+	velocity.multiplyScalar(damping);
+	source.add(velocity);
+}
 
 // export function threeVector(vec: CANNON.Vec3): THREE.Vector3
 // {

@@ -20,6 +20,9 @@
         </swiper-slide>
       </swiper>
       <input v-model="name" class="name"/>
+      &nbsp;&nbsp;
+      <button @click="() => handleClickCreateRandomName()">随机名称</button>
+      &nbsp;&nbsp;
       <button @click="() => handleClickCreateAvatar()">创建角色</button>
     </div>
   </div>
@@ -32,6 +35,8 @@
          </div>
          <div class="cl-chat-form">
             <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
+            <button class="cl-send-chat" >表情</button>
+            <button class="cl-send-chat" @click="handleClickTest">语音</button>
             <button class="cl-send-chat" @click="handleClickTest">Send</button>
          </div>
      </div>
@@ -91,6 +96,20 @@ const onSlideChange = (e) => {
   let pageIndex = e.activeIndex;
   glbModelPath.value = roleList[pageIndex]
 }
+const handleClickCreateRandomName = () => {
+    name.value = randomName()
+}
+
+const randomName = () => {
+  const firstName = ["John", "Mary", "David", "Paul", "Mark", "James", "Michael", "Joseph", "Richard", "Charles",
+              "Thomas", "Christopher","Daniel","Matthew","Anthony","Donald","Elizabeth","Kenneth","Susan","Margaret"];
+  const lastName = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones'];
+
+  const randomFirstNameIndex = Math.floor(Math.random() * firstName.length);
+  const randomLastNameIndex = Math.floor(Math.random() * lastName.length);
+
+  return `${firstName[randomFirstNameIndex]}-${lastName[randomLastNameIndex]}`;
+}
 
 onMounted(() => {
   socket.on('connect', () => console.log('connect: websocket 连接成功！'))
@@ -104,7 +123,7 @@ onMounted(() => {
   socket.on('roomMessage', function (userName, userMessage) {
     appendMsg(userName, userMessage)
   });
-
+  name.value = randomName()
 });
 // 创建角色
 const handleClickCreateAvatar = async () => {
@@ -241,7 +260,7 @@ const appendMsg = (userName, userMessage) => {
 // online users style
 .cl-online-users {
   position: fixed
-  width: 130px
+  width: 150px
   height: 185px
   top: 20%;
   right: 15px;

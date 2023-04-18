@@ -31,8 +31,8 @@ io.on('connection', async (socket) => {
         // 加入房间
         socket.join(roomName);
         // 通知房间内人员
-        io.to(roomName).emit('system', user + ' joined Game ', roomInfo[roomName]);  
-        console.log(user + ' joined Room ' + roomName);
+        io.to(roomName).emit('system', user + ' join the game ', roomInfo[roomName]);  
+        console.log(user + ' joined room ' + roomName);
     });
     socket.on('message',function (data) {
         socket.broadcast.emit('message', data);
@@ -65,6 +65,42 @@ io.on('connection', async (socket) => {
         }
 
     });
+
+    // socket 用户首次登录拉取房间所有用户角色数据(角色对象，位置信息，四元素)
+    socket.on('roleBroadcasting', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if(user){
+            if (roomInfo[roomName].indexOf(user) === -1) {  
+                return false;
+            }
+            io.to(roomName).emit('roomMessage', user, msg);
+        }
+
+    });
+    // socket 玩家角色位置广播(角色对象名称，位置信息，四元素)
+    socket.on('rolePosition', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if(user){
+            if (roomInfo[roomName].indexOf(user) === -1) {  
+                return false;
+            }
+            io.to(roomName).emit('roomMessage', user, msg);
+        }
+
+    });
+    // webRTC 语音信令服务器广播
+    socket.on('webRtcSignaling', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if(user){
+            if (roomInfo[roomName].indexOf(user) === -1) {  
+                return false;
+            }
+            io.to(roomName).emit('roomMessage', user, msg);
+        }
+
+    });
+    // webRTC 语音服务
+    // webRTC 视频服务
 });
 
 // const removeUser = (objects, key, value) => {

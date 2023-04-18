@@ -20,7 +20,6 @@ export class CapsuleCollider
 			friction: 0.3
 		};
 		options = Utils.setDefaults(options, defaults);
-		console.log("options", options)
 		this.options = options;
 		// 创建物理材质，名字是自己取的
 		let mat = new CANNON.Material('capsuleMat');
