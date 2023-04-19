@@ -683,12 +683,57 @@ export default class PlayerController {
 			this.position.z = z;
 		}
 	}
+  getLocalMovementDirection()
+	{
+		const positiveX = this.actions.right.isPressed ? -1 : 0;
+		const negativeX = this.actions.left.isPressed ? 1 : 0;
+		const positiveZ = this.actions.up.isPressed ? 1 : 0;
+		const negativeZ = this.actions.down.isPressed ? -1 : 0;
 
+		return new THREE.Vector3(positiveX + negativeX, 0, positiveZ + negativeZ).normalize();
+	}
+   getCameraRelativeMovementVector()
+	{
+		const localDirection = this.getLocalMovementDirection();
+		const flatViewVector = new THREE.Vector3(this.viewVector.x, 0, this.viewVector.z).normalize();
+
+		return Utils.appplyVectorMatrixXZ(flatViewVector, localDirection);
+	}
+  setCameraRelativeOrientationTarget()
+	{
+		// console.log('setCameraRelativeOrientationTarget');
+		if (this.vehicleEntryInstance === null)
+		{
+			let moveVector = this.getCameraRelativeMovementVector();
+	
+			if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0)
+			{
+				this.setOrientation(this.orientation);
+			}
+			else
+			{
+				this.setOrientation(moveVector);
+			}
+		}
+	}
+  setOrientation(vector, instantly = false)
+	{
+		let lookVector = new THREE.Vector3().copy(vector).setY(0).normalize();
+		this.orientationTarget.copy(lookVector);
+
+		// console.log('setOrientation', this.orientationTarget);
+		
+		if (instantly)
+		{
+			this.orientation.copy(lookVector);
+		}
+	}
   update=()=> {
     const delta = clock.getDelta();
     this.physics.step(1 / 60, delta);
     this.characterCapsule.body.preStep = this.physicsPreStep(this.characterCapsule.body, this);
     this.characterCapsule.body.postStep = this.physicsPostStep(this.characterCapsule.body, this);
+
     // console.log('this.characterCapsule.body.position.y', this.characterCapsule.body.position.y)
     // if(this.characterCapsule.body.position.y < 0){
     //   this.characterCapsule.body.position.y = 1
@@ -735,7 +780,9 @@ export default class PlayerController {
     }
     const isInpt = computed(() => this.storeObj.useAppStore.getIsInpt)
     if ((this.currentAction == 'Run' || this.currentAction == 'Walk') && !isInpt.value) {
+      console.log("============")
       this.setArcadeVelocityTarget(0.8);
+      this.setCameraRelativeOrientationTarget()
       console.log("============")
       // // console.log('player.position.x', player.position.x)
       // // 摄像机方向计算
