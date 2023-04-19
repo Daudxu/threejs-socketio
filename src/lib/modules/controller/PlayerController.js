@@ -668,6 +668,22 @@ export default class PlayerController {
 		// this.acceleration.copy(this.velocitySimulator.velocity);
 	}
 
+  setPosition(x, y, z)
+	{
+		if (this.physicsEnabled)
+		{
+			this.characterCapsule.body.previousPosition = new CANNON.Vec3(x, y, z);
+			this.characterCapsule.body.position = new CANNON.Vec3(x, y, z);
+			this.characterCapsule.body.interpolatedPosition = new CANNON.Vec3(x, y, z);
+		}
+		else
+		{
+			this.position.x = x;
+			this.position.y = y;
+			this.position.z = z;
+		}
+	}
+
   update=()=> {
     const delta = clock.getDelta();
     this.physics.step(1 / 60, delta);
