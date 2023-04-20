@@ -658,7 +658,7 @@ export default class PlayerController {
 	}
   springMovement(timeStep)
 	{
-    console.log("this.velocityTarget=========", this.velocitySimulator)
+    // console.log("this.velocityTarget=========", this.velocitySimulator)
 		// Simulator
 		this.velocitySimulator.target.copy(this.velocityTarget);
 		// this.velocitySimulator.simulate(timeStep);

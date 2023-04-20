@@ -34,10 +34,12 @@
           </p>
          </div>
          <div class="cl-chat-form">
-            <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
-            <button class="cl-send-chat" >表情</button>
-            <button class="cl-send-chat" @click="handleClickTest">语音</button>
+             <div class="cl-chat-input">
+                <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
+                <button class="cl-send-emj" >表情</button>
+             </div>
             <button class="cl-send-chat" @click="handleClickTest">Send</button>
+            <button class="cl-send-voice" @click="handleClickTest">语音</button>
          </div>
      </div>
   </div>
@@ -239,20 +241,51 @@ const appendMsg = (userName, userMessage) => {
   .cl-chat-form {
     display: flex
     justify-content: space-between
-    .cl-chat-msg {
-      width: 250px
-      height: 0px
-      background-color:rgba(0,0,0,0.5);
-      padding: 15px
-      color: #ffffff
-      border-radius:18px
+    .cl-chat-input {
+      position: relative
+      width: 280px
+      display: flex
+      padding:  0 8px
+      background-color: rgba(0,0,0,0.5);
+      border-radius: 18px
+      .cl-chat-msg {
+          background-color: rgba(0,0,0,0.0);
+          color: #ffffff
+          border-radius: 18px
+          width: 90%
+      }
+      .cl-send-emj {
+        position: absolute
+        right: 0;
+        top: 0
+        background-color:rgba(0,0,0,0.5);
+        width: 30px
+        height: 30px
+        color: #ffffff
+        font-size: 10px
+        border-radius: 18px
+        cursor: pointer
+      }
     }
     .cl-send-chat {
-      width: 77px
+      width: 45px
       height: 30px
       background-color:rgba(0,0,0,0.5);
+      font-size: 8px
       color: #ffffff
       border-radius:18px
+      margin-left: 10px
+      cursor: pointer
+    }
+    .cl-send-voice{
+      width: 30px
+      height: 30px
+      background-color:rgba(0,0,0,0.5);
+      font-size: 8px
+      color: #ffffff
+      border-radius:18px
+      margin-left: 10px
+      cursor: pointer
     }
   }
 }
