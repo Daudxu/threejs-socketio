@@ -4,17 +4,17 @@ import { Character } from './Character';
 
 export class VehicleEntryInstance
 {
-	public character: Character;
-	public targetSeat: VehicleSeat;
-	public entryPoint: THREE.Object3D;
-	public wantsToDrive: boolean = false;
+	character
+	targetSeat
+	entryPoint
+	wantsToDrive = false
 
-	constructor(character: Character)
+	constructor(character)
 	{
 		this.character = character;
 	}
 
-	public update(timeStep: number): void
+    update(timeStep)
 	{
 		let entryPointWorldPos = new THREE.Vector3();
 		this.entryPoint.getWorldPosition(entryPointWorldPos);
