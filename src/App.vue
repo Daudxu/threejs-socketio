@@ -193,7 +193,7 @@ connection.onstreamended = function(event) {
     if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement);
         console.log("=================event=================", event)
-    }
+    }  
 };
 
 
