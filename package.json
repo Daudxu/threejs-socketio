@@ -17,13 +17,15 @@
     "lodash": "^4.17.21",
     "pinia": "^2.0.33",
     "pinia-plugin-persist": "^1.0.0",
+    "rtcmulticonnection": "^3.7.1",
     "socket.io-client": "^4.6.1",
     "stylus": "^0.59.0",
     "stylus-loader": "^7.1.0",
     "swiper": "^9.2.0",
     "three": "^0.150.1",
     "three-to-cannon": "^4.3.0",
-    "vue": "^3.2.47"
+    "vue": "^3.2.47",
+    "webrtc-adapter": "^8.2.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",

@@ -28,6 +28,7 @@
   </div>
   <div class="cl-chat">
      <div class="cl-main"> 
+         <div id="audios-container" refs="audiosDom"></div>
          <div class="cl-chat-content" ref="chatContent">
           <p v-for="(item, index) in msgData.list" :key="index" >
              <span v-html="item"></span>
@@ -35,11 +36,11 @@
          </div>
          <div class="cl-chat-form">
              <div class="cl-chat-input">
-                <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
+                <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickEmj" v-model="msg"  />
                 <button class="cl-send-emj" >表情</button>
              </div>
             <button class="cl-send-chat" @click="handleClickTest">Send</button>
-            <button class="cl-send-voice" @click="handleClickTest">语音</button>
+            <button class="cl-send-voice" @click="handleClickVoice">语音</button>
          </div>
      </div>
   </div>
@@ -58,20 +59,46 @@
 <script setup>
 import * as THREE from "three";
 import { renderAPI } from "./lib/renderAPI";
+import  { getHTMLMediaElement }  from "./getHTMLMediaElement";
 import io from 'socket.io-client'
+import RTCMultiConnection from 'RTCMultiConnection';
 import { onMounted, ref, reactive, nextTick, computed } from "vue"
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { EffectCards } from 'swiper';
+// import * as io from 'socket.io-client'
+window.io = io
+import adapter from 'webrtc-adapter';
 import 'swiper/css/effect-cards';
 import 'swiper/css';
 import Store from './store/index.js'
-
+let audiosDom = ref("")
 const Pinia  = Store()
 const socket = io('ws://localhost:3000');
 
+const connection = new RTCMultiConnection();
+connection.socketURL = 'https://webrtc.3helper.com/';
+connection.socketMessageEvent = 'audio-conference-demo';
+connection.session = {
+    audio: true,
+    video: false
+};
+connection.mediaConstraints = {
+    audio: true,
+    video: false
+};
+connection.sdpConstraints.mandatory = {
+    OfferToReceiveAudio: true,
+    OfferToReceiveVideo: false
+};
+
+
+
+
 const isInput = computed(() => Pinia.useAppStore.getIsInpt)
+
 const isShowCreateAvatar = ref(true)
 let name = ref()
+
 let users = reactive({
     list: []
 })
@@ -93,7 +120,7 @@ const roleList = [
 const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
 } 
-
+const params = {}
 const onSlideChange = (e) => {
   let pageIndex = e.activeIndex;
   glbModelPath.value = roleList[pageIndex]
@@ -126,6 +153,90 @@ onMounted(() => {
     appendMsg(userName, userMessage)
   });
   name.value = randomName()
+
+// https://www.rtcmulticonnection.org/docs/iceServers/
+// use your own TURN-server here!
+connection.iceServers = [{
+    'urls': [
+        'stun:stun.l.google.com:19302',
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302',
+        'stun:stun.l.google.com:19302?transport=udp',
+    ]
+}];
+connection.audiosContainer = document.getElementById('audios-container');
+// connection.audiosContainer = audiosDom;
+connection.onstream = function(event) {
+    console.log("==================event===================", event)
+    console.log("connection.audiosContainer", connection.audiosContainer)
+    var width = parseInt(connection.audiosContainer.clientWidth / 2) - 20;
+    var mediaElement = getHTMLMediaElement(event.mediaElement, {
+        title: event.userid,
+        buttons: ['full-screen'],
+        width: width,
+        showOnMouseEnter: false
+    });
+
+    connection.audiosContainer.appendChild(mediaElement);
+
+    setTimeout(function() {
+        console.log("===========")
+        mediaElement.media.play();
+    }, 5000);
+
+    mediaElement.id = event.streamid;
+};
+
+connection.onstreamended = function(event) {
+   console.log("=================event=================", event)
+    // var mediaElement = document.getElementById(event.streamid);
+    if (mediaElement) {
+        mediaElement.parentNode.removeChild(mediaElement);
+        console.log("=================event=================", event)
+    }
+};
+
+
+
+  var roomid = '';
+if (localStorage.getItem(connection.socketMessageEvent)) {
+    roomid = localStorage.getItem(connection.socketMessageEvent);
+} else {
+    roomid = connection.token();
+}
+console.log("roomid", roomid)
+// document.getElementById('room-id').value = roomid;
+// document.getElementById('room-id').onkeyup = function() {
+//     localStorage.setItem(connection.socketMessageEvent, this.value);
+// };
+
+var hashString = location.hash.replace('#', '');
+if (hashString.length && hashString.indexOf('comment-') == 0) {
+    hashString = '';
+}
+
+var roomid = params.roomid;
+if (!roomid && hashString.length) {
+    roomid = hashString;
+}
+
+if (roomid && roomid.length) {
+    // document.getElementById('room-id').value = roomid;
+    localStorage.setItem(connection.socketMessageEvent, roomid);
+
+    // auto-join-room
+    (function reCheckRoomPresence() {
+        connection.checkPresence(roomid, function(isRoomExist) {
+            if (isRoomExist) {
+                connection.join(roomid);
+                return;
+            }
+            setTimeout(reCheckRoomPresence, 5000);
+        });
+    })();
+
+    // disableInputButtons();
+}
 });
 // 创建角色
 const handleClickCreateAvatar = async () => {
@@ -161,12 +272,21 @@ const initThree = (socket) => {
         .catch();
     }
 }
-// 测试
+// 发送消息
 const handleClickTest = () => {
   if(msg.value){
     socket.emit('roomMessage', msg.value);
     msg.value = ""
   }
+}
+// 语音
+const handleClickVoice = () => {
+  connection.openOrJoin("myroom", function(isRoomExist, roomid) {
+        if (!isRoomExist) {
+            // showRoomURL(roomid);
+            console.log("roomid", roomid)
+        }
+  });
 }
 // 滚动
 const scrollToBottom = () => {
@@ -180,6 +300,10 @@ const scrollToBottom = () => {
 }
 // 是否再输入
 const handleClickIsInpt = (e) => {
+  Pinia.useAppStore.setIsInpt(e)
+}
+// 表情包
+const handleClickEmj = (e) => {
   Pinia.useAppStore.setIsInpt(e)
 }
 
