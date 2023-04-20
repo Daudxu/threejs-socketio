@@ -685,12 +685,13 @@ export default class PlayerController {
 	}
   getLocalMovementDirection()
 	{
-		const positiveX = this.actions.right.isPressed ? -1 : 0;
-		const negativeX = this.actions.left.isPressed ? 1 : 0;
-		const positiveZ = this.actions.up.isPressed ? 1 : 0;
-		const negativeZ = this.actions.down.isPressed ? -1 : 0;
+    console.log("this.actions.right.isPressed ", this.actions.right.isPressed )
+		// const positiveX = this.actions.right.isPressed ? -1 : 0;
+		// const negativeX = this.actions.left.isPressed ? 1 : 0;
+		// const positiveZ = this.actions.up.isPressed ? 1 : 0;
+		// const negativeZ = this.actions.down.isPressed ? -1 : 0;
 
-		return new THREE.Vector3(positiveX + negativeX, 0, positiveZ + negativeZ).normalize();
+		// return new THREE.Vector3(positiveX + negativeX, 0, positiveZ + negativeZ).normalize();
 	}
    getCameraRelativeMovementVector()
 	{
@@ -780,37 +781,37 @@ export default class PlayerController {
     }
     const isInpt = computed(() => this.storeObj.useAppStore.getIsInpt)
     if ((this.currentAction == 'Run' || this.currentAction == 'Walk') && !isInpt.value) {
-      console.log("============")
-      this.setArcadeVelocityTarget(0.8);
-      this.setCameraRelativeOrientationTarget()
-      console.log("============")
-      // // console.log('player.position.x', player.position.x)
-      // // 摄像机方向计算
-      // var angleYCameraDirection = Math.atan2(
-      //         (this.camera.position.x - player.position.x), 
-      //         (this.camera.position.z - player.position.z))
-      // // 对角线移动角度偏移
-      // directionOffset = this.directionOffset(this.keysPressed, 'back')
-      // directionOffseta = this.directionOffset(this.keysPressed, 'front')
-      // // rotate model
-      // this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
-      // player.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
+      // console.log("============")
+      // this.setArcadeVelocityTarget(0.8);
+      // this.setCameraRelativeOrientationTarget()
+      // console.log("============")
+      // console.log('player.position.x', player.position.x)
+      // 摄像机方向计算
+      var angleYCameraDirection = Math.atan2(
+              (this.camera.position.x - player.position.x), 
+              (this.camera.position.z - player.position.z))
+      // 对角线移动角度偏移
+      directionOffset = this.directionOffset(this.keysPressed, 'back')
+      directionOffseta = this.directionOffset(this.keysPressed, 'front')
+      // rotate model
+      this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
+      player.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
       
-      // // calculate direction
-      // this.camera.getWorldDirection(this.walkDirection)
-      // this.walkDirection.y = 0
-      // this.walkDirection.normalize()
-      // this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffseta)
+      // calculate direction
+      this.camera.getWorldDirection(this.walkDirection)
+      this.walkDirection.y = 0
+      this.walkDirection.normalize()
+      this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffseta)
 
-      // // run/walk velocity
-      // const velocity = this.currentAction == 'Run' ? runVelocity : walkVelocity
+      // run/walk velocity
+      const velocity = this.currentAction == 'Run' ? runVelocity : walkVelocity
 
-      // // move model & camera
-      // const moveX = this.walkDirection.x * velocity * delta
-      // const moveZ = this.walkDirection.z * velocity * delta
-      // this.characterCapsule.body.position.x += moveX
-      // this.characterCapsule.body.position.z += moveZ
-      // this.updateCameraTarget(moveX, moveZ)
+      // move model & camera
+      const moveX = this.walkDirection.x * velocity * delta
+      const moveZ = this.walkDirection.z * velocity * delta
+      this.characterCapsule.body.position.x += moveX
+      this.characterCapsule.body.position.z += moveZ
+      this.updateCameraTarget(moveX, moveZ)
   }
     // labelRenderer.render( this.scene, this.camera );
     //动画
