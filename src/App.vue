@@ -378,6 +378,7 @@ const appendMsg = (userName, userMessage) => {
   scrollToBottom()
 }
 
+let isRoomExist
 
 // webRTC
 // 打开/关闭麦克风
@@ -392,9 +393,10 @@ const handleClickMicrophone = () => {
         }
     });
     // connection.streams.stop('local-stream-id');
-
+    console.log("connection.userid", connection.userid)
     microphoneIsDisable.value = false
   }else{
+    RTCMultiConnection.closeAudio();
     // connection.streams.stop('local-stream-id');
     microphoneIsDisable.value = true
   }
