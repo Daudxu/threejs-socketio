@@ -396,7 +396,11 @@ const handleClickMicrophone = () => {
     console.log("connection.userid", connection.userid)
     microphoneIsDisable.value = false
   }else{
-    RTCMultiConnection.closeAudio();
+    navigator.mediaDevices.getUserMedia({ audio: false })
+    .then(stream => {
+      stream.getTracks().forEach(track => track.stop());
+    });
+
     // connection.streams.stop('local-stream-id');
     microphoneIsDisable.value = true
   }
