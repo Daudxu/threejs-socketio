@@ -449,23 +449,39 @@ const appendMsg = (userName, userMessage) => {
 const handleClickMicrophone = () => {
   if(microphoneIsDisable.value){
     connection.openOrJoin("myroom", function(isRoomExist, roomid) {
+            console.log("=======================")
+            console.log("roomid:", roomid, "isRoomExist:", isRoomExist)
+            console.log("=======================")
         if (!isRoomExist) {
-            console.log("=======================================================")
-            console.log("roomid", roomid)
-            console.log("=======================================================")
+            // 不存在就处理不存在的逻辑
         }
     });
+    // connection.streams.stop('local-stream-id');
+
     microphoneIsDisable.value = false
   }else{
+    // connection.streams.stop('local-stream-id');
     microphoneIsDisable.value = true
   }
 }
 
 // 打开/关闭扬声器
 const handleClickSpeaker = () => {
+  // var allStreams = [];
+  // Object.keys(connection.streamEvents).forEach(function(streamid) {
+  //     var event = connection.streamEvents[streamid];
+
+  //     if (event.userid === 'your-preferred-userid') {
+  //         allStreams.push(event.stream);
+  //     }
+  // });
+  // console.log("connection.streamEvents", connection.streamEvents)
+  var localStream = connection.attachStreams[0];
   if(speakerIsDisable.value){
+    localStream.unmute('both');
     speakerIsDisable.value = false
   }else{
+    localStream.mute('both')
     speakerIsDisable.value = true
   }
 }
