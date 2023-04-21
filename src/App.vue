@@ -63,6 +63,7 @@
   <div class="cl-webrtc-control">
       <div class="cl-microphone bg-color control-btu"  @click="handleClickMicrophone()">
          <span class="icon iconfont icon-voice" v-show="microphoneIsDisable === false"></span>
+         <div class="cl-speaking" v-show="isSpeaking"></div>
          <span class="icon iconfont icon-microphone-off" v-show="microphoneIsDisable"></span>
       </div>
       <div class="cl-speaker bg-color control-btu" @click="handleClickSpeaker()">
@@ -109,17 +110,10 @@ connection.sdpConstraints.mandatory = {
     OfferToReceiveVideo: false
 };
 
-connection.onstream = function(event) {
-  console.log("====监听谁在说话====", )
-    initHark({
-        stream: event.stream,
-        streamedObject: event,
-        connection: connection
-    });
-};
 
 connection.onspeaking = function (e) {
     // e.streamid, e.userid, e.stream, etc.
+    console.log("=============================",e)
     e.mediaElement.style.border = '1px solid red';
 };
 
@@ -142,16 +136,20 @@ const initHark = (args) => {
     var connection = args.connection;
     var streamedObject = args.streamedObject;
     var stream = args.stream;
-
+    console.log("streamedObject",streamedObject)
     var options = {};
     var speechEvents = hark(stream, options);
 
     speechEvents.on('speaking', function() {
         connection.onspeaking(streamedObject);
+        isSpeaking.value = true
+        console.log("正在说话...")
     });
 
     speechEvents.on('stopped_speaking', function() {
         connection.onsilence(streamedObject);
+        isSpeaking.value = false
+        console.log("停止了说话..")
     });
 
     speechEvents.on('volume_change', function(volume, threshold) {
@@ -166,6 +164,7 @@ const isInput = computed(() => Pinia.useAppStore.getIsInpt)
 const isShowCreateAvatar = ref(true)
 
 let name = ref()
+let isSpeaking = ref(false)
 let microphoneIsDisable = ref(true)
 let speakerIsDisable = ref(false)
 
@@ -252,6 +251,13 @@ connection.onstream = function(event) {
         mediaElement.media.play();
     }, 3000);
     mediaElement.id = event.streamid;
+
+    console.log("====监听谁在说话====", )
+    initHark({
+        stream: event.stream,
+        streamedObject: event,
+        connection: connection
+    });
 };
 
 connection.onstreamended = function(event) {
@@ -363,80 +369,9 @@ const handleClickIsInpt = (e) => {
 }
 // 表情包
 const handleClickEmj = (e) => {
-  console.log("==========================")
-connection.onstream = function(event) {
-    initHark({
-        stream: event.stream,
-        streamedObject: event,
-        connection: connection
-    });
-};
-
-connection.onspeaking = function (e) {
-    // e.streamid, e.userid, e.stream, etc.
-    e.mediaElement.style.border = '1px solid red';
-};
-
-connection.onsilence = function (e) {
-    // e.streamid, e.userid, e.stream, etc.
-    e.mediaElement.style.border = '';
-};
-
-connection.onvolumechange = function(event) {
-    event.mediaElement.style.borderWidth = event.volume;
-};
-
-function initHark(args) {
-    if (!window.hark) {
-        throw 'Please link hark.js';
-        return;
-    }
-    console.log("==========================")
-    var connection = args.connection;
-    var streamedObject = args.streamedObject;
-    var stream = args.stream;
-
-    var options = {};
-    var speechEvents = hark(stream, options);
-
-    speechEvents.on('speaking', function() {
-        connection.onspeaking(streamedObject);
-    });
-
-    speechEvents.on('stopped_speaking', function() {
-        connection.onsilence(streamedObject);
-    });
-
-    speechEvents.on('volume_change', function(volume, threshold) {
-        streamedObject.volume = volume;
-        streamedObject.threshold = threshold;
-        connection.onvolumechange(streamedObject);
-    });
+  console.log("============show emg==============")
 }
 
-
-  // Pinia.useAppStore.setIsInpt(e)
-  // const getUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-  // var getUserMedia = navigator.getUserMedia || 
-  //   navigator.mozGetUserMedia || 
-  //   navigator.webkitGetUserMedia;
-//  console.log("getUserMedia", getUserMedia)
-  //   // make sure it's supported and bind to navigator
-  //   if (getUserMedia) {
-  //       getUserMedia = getUserMedia.bind(navigator);
-  //   } else {
-  //       // have to figure out how to handle the error somehow
-  //   }
-  // getUserMedia({audio: true})
-  // .then((res)=>{
-  //    console.log("res", res)
-  // })
-  // .catch((err)=> {
-  //   console.log("err", err)
-  // })
-
-
-}
 const appendMsg = (userName, userMessage) => {
   let msgDom = `<span class="cl-sendName">${userName}:&nbsp;</span> <span class="cl-sendMsg">${userMessage} </span>`
   msgData.list.push(msgDom)
@@ -467,15 +402,6 @@ const handleClickMicrophone = () => {
 
 // 打开/关闭扬声器
 const handleClickSpeaker = () => {
-  // var allStreams = [];
-  // Object.keys(connection.streamEvents).forEach(function(streamid) {
-  //     var event = connection.streamEvents[streamid];
-
-  //     if (event.userid === 'your-preferred-userid') {
-  //         allStreams.push(event.stream);
-  //     }
-  // });
-  // console.log("connection.streamEvents", connection.streamEvents)
   var localStream = connection.attachStreams[0];
   if(speakerIsDisable.value){
     localStream.unmute('both');
@@ -750,11 +676,20 @@ const handleClickSpeaker = () => {
       align-items: center;
       border-radius: 18px
       cursor: pointer
+      position: relative
       span {
         font-size: 30px
       }
       .icon-mutemode {
         font-size: 32px
+      }
+      .cl-speaking {
+        position: absolute
+        top: 17px
+        width: 10px;
+        height: 15px;
+        background: #1cee65
+        border-radius: 5px
       }
    }
    .cl-microphone {
