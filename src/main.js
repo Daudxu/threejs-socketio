@@ -5,6 +5,8 @@ import App from './App.vue'
 import './assets/css/reset.css'
 //引入border.css,1像素边框解决方案
 import './assets/css/border.css'
+//引入字体图标库
+import './assets/iconfont/iconfont.css'
 
 import FastClick from 'fastclick'
 FastClick(document.body)
