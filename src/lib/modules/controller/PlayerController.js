@@ -5,7 +5,7 @@ import { A, D, DIRECTIONS, S, W } from '../../../utils/KeyDisplay'
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils'
 import * as TWEEN from '@tweenjs/tween.js'
 import gsap from 'gsap'
-import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+// import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as CANNON from "cannon-es"
 import CannonDebugger from 'cannon-es-debugger'
@@ -20,6 +20,7 @@ import { GroundImpactData } from '../../characters/GroundImpactData';
 import * as Utils from '../../core/FunctionLibrary';
 import { TrimeshCollider } from '../../physics/TrimeshCollider.js';
 import { VectorSpringSimulator } from '../../physics/spring_simulation/VectorSpringSimulator';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
 const GROUP1 = 1;
 const GROUP2 = 2;
@@ -37,7 +38,7 @@ let colliders = []
 let mixers = []
 let action
 let tween
-let labelRenderer
+let labelRenderer;
 const runVelocity = 5
 const walkVelocity = 2
 
@@ -361,7 +362,7 @@ export default class PlayerController {
     _this.setState(this.stateInt)
     _this.socketMessage()
     _this.socketRemovAvatar()
-    // _this.initCSS2DRenderer()
+    _this.initCSS2DRenderer()
     
     window.addEventListener('keydown', (event) => {
       if (event.shiftKey && _this.player) {
@@ -401,34 +402,32 @@ export default class PlayerController {
  
     player.name = model.name
     player.add(model)
+    this.create2DObject(model.name, player)
     player.layers.enableAll();
-    // this.create2DObject(model.name,player)
-  }
-  // create2DObject(name,model, type = 'create'){
-  //   const labelDiv = document.createElement( 'div' );
-  //   labelDiv.className = 'cl-label';
-  //   labelDiv.textContent = name;
-  //   labelDiv.style.marginTop = '1em';
-  //   const moonLabel = new CSS2DObject( labelDiv );
-  //   if(type === 'create') {
-  //     moonLabel.position.set( 0, 0.6, 0 );
-  //   }else{
-  //     moonLabel.position.set( 0, 2.6, 0 );
-  //   }
 
-  //   // console.log(model.size())
-  //   model.add( moonLabel );
-  //   moonLabel.layers.set( 0 );
-  // }
-  // initCSS2DRenderer(){
-  //   labelRenderer = new CSS2DRenderer();
-  //   labelRenderer.setSize( window.innerWidth, window.innerHeight );
-  //   labelRenderer.domElement.style.position = 'absolute';
-  //   labelRenderer.domElement.style.top = '0px';
-  //   labelRenderer.domElement.style.color = '#ffffff';
-  //   labelRenderer.domElement.style.fontWeight = '700';
-  //   document.body.appendChild( labelRenderer.domElement );
-  // }
+  }
+  create2DObject(name, model){
+    const labelDiv = document.createElement( 'div' );
+    labelDiv.className = 'cl-label';
+    labelDiv.textContent = name;
+    labelDiv.style.marginTop = '1em';
+    const moonLabel = new CSS2DObject( labelDiv );
+    moonLabel.position.set( 0, 1, 0 );
+    // console.log(model.size())
+    model.add( moonLabel );
+    // this.scene.add(moonLabel)
+    console.log("========model======", model)
+    moonLabel.layers.set( 0 );
+  }
+  initCSS2DRenderer(){
+    labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize( window.innerWidth, window.innerHeight );
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.color = '#ffffff';
+    labelRenderer.domElement.style.fontWeight = '700';
+    document.body.appendChild( labelRenderer.domElement );
+  }
 
   initScenario(scene) {
     let _this = this
@@ -590,7 +589,9 @@ export default class PlayerController {
       if (message.id) {
         let model = this.scene.getObjectByName(message.id)
         if (model) {
-          model.position.set(message.playerPosition.x, message.playerPosition.y, message.playerPosition.z)
+          model.scale.set(0.5, 0.5, 0.5)
+          // model.position.set(0, -2.5, 0)
+          model.position.set(message.playerPosition.x, message.playerPosition.y - 0.5, message.playerPosition.z)
           if (message.playerQuaternion) {
             model.quaternion.set(message.playerQuaternion._x,message.playerQuaternion._y,message.playerQuaternion._z,message.playerQuaternion._w)
           }
@@ -612,6 +613,7 @@ export default class PlayerController {
           // }
         } else {
           let model = SkeletonUtils.clone(this.player.scene)
+          model.scale.set(0.5, 0.5, 0.5)
           model.name = message.id
           // let mixer = new THREE.AnimationMixer(model)
           // walking = mixer.clipAction(this.player.animations[10])
@@ -626,7 +628,7 @@ export default class PlayerController {
           //   }
           // }
           // this.playerAnimationsArr.push(obj)
-          // this.create2DObject(message.id, model, 'update')
+          this.create2DObject(message.id, model, 'update')
           this.scene.add(model)
           // mixers.push(mixer)
         }
@@ -767,7 +769,7 @@ export default class PlayerController {
 		}
  
 
-    this.cannonDebugger.update();
+    // this.cannonDebugger.update();
     const directionPressed = DIRECTIONS.some(key => this.keysPressed[key] == true)
       // console.log("directionPressed", typeof this.keysPressed)
     var play = '';
@@ -813,7 +815,10 @@ export default class PlayerController {
       this.characterCapsule.body.position.z += moveZ
       this.updateCameraTarget(moveX, moveZ)
   }
-    // labelRenderer.render( this.scene, this.camera );
+  if(labelRenderer){
+    labelRenderer.render( this.scene, this.camera );
+  }
+
     //动画
     if (mixers) {
       for (const mixer of mixers) mixer.update(delta);

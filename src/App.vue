@@ -39,7 +39,6 @@
                   <ul class="cl-emoji-ul">
                     <li class="cl-emoji-li"  v-for="(item, index) in EMOGI" :key="index">
                         <img
-                          class="serviceSendExpression"
                           v-bind:src="item.image"
                           v-bind:title="item.title"
                           v-on:click="toSend(item.image, 1, 2)"
@@ -175,7 +174,7 @@ const initHark = (args) => {
 const isInput = computed(() => Pinia.useAppStore.getIsInpt)
 
 const isShowCreateAvatar = ref(true)
-const emojiIsShow = ref(true)
+const emojiIsShow = ref(false)
 
 let name = ref()
 let isSpeaking = ref(false)
