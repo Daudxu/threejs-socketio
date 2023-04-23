@@ -35,6 +35,18 @@
          </div>
          <div class="cl-chat-form">
              <div class="cl-chat-input">
+                <div v-show="emojiIsShow" class="cl-emoji-box">
+                  <ul class="cl-emoji-ul">
+                    <li class="cl-emoji-li"  v-for="(item, index) in EMOGI" :key="index">
+                        <img
+                          class="serviceSendExpression"
+                          v-bind:src="item.image"
+                          v-bind:title="item.title"
+                          v-on:click="toSend(item.image, 1, 2)"
+                        />
+                      </li>
+                  </ul>
+                </div>
                 <input type="text" class="cl-chat-msg" @blur="handleClickIsInpt(false)" @focus="handleClickIsInpt(true)"  @keyup.enter="handleClickTest" v-model="msg"  />
                 <button class="cl-send-emj" @click="handleClickEmj">
                   <span class="icon iconfont icon-tubiaozhizuomoban-96"></span>
@@ -83,6 +95,7 @@ import { renderAPI } from "./lib/renderAPI";
 import  { getHTMLMediaElement }  from "./getHTMLMediaElement";
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { EffectCards } from 'swiper';
+import { EMOGI } from './config/settings';
 import 'swiper/css/effect-cards';
 import 'swiper/css';
 import Store from './store/index.js'
@@ -162,6 +175,7 @@ const initHark = (args) => {
 const isInput = computed(() => Pinia.useAppStore.getIsInpt)
 
 const isShowCreateAvatar = ref(true)
+const emojiIsShow = ref(true)
 
 let name = ref()
 let isSpeaking = ref(false)
@@ -368,8 +382,8 @@ const handleClickIsInpt = (e) => {
   Pinia.useAppStore.setIsInpt(e)
 }
 // 表情包
-const handleClickEmj = (e) => {
-  console.log("============show emg==============")
+const handleClickEmj = () => {
+  emojiIsShow.value = !emojiIsShow.value;
 }
 
 const appendMsg = (userName, userMessage) => {
@@ -477,6 +491,29 @@ const handleClickSpeaker = () => {
       padding:  0 8px
       background-color: rgba(0,0,0,0.5);
       border-radius: 18px
+      .cl-emoji-box {
+        position: absolute
+        top: -173px;
+        right: -67px;
+        width: 176px;
+        height: 158px
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 18px
+        .cl-emoji-ul {
+          width: 156px;
+          height: 138px
+          display: flex
+          flex-wrap: wrap
+          .cl-emoji-li {
+            width: 22px
+            height: 22px
+            cursor: pointer
+          }
+        }
+    }
       .cl-chat-msg {
           background-color: rgba(0,0,0,0.0);
           color: #ffffff
@@ -662,7 +699,7 @@ const handleClickSpeaker = () => {
    background-color:rgba(0,0,0,0.2);
    display: none
 }
-
+// cl-emoji-box
 // webrtc 控制台
 .cl-webrtc-control {
    position:fixed ;

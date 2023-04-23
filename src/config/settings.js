@@ -4,171 +4,171 @@ const VERSION = import.meta.env.VITE_VERSION
 const EMOGI = [
     {
       title: "[呵呵]",
-      image: require("../assets/images/emoji/smilea_thumb.gif"),
+      image: new URL('../assets/images/emoji/smilea_thumb.gif', import.meta.url).href,
     },
     {
       title: "[嘻嘻]",
-      image: require("../assets/images/emoji/tootha_thumb.gif"),
+      image: new URL("../assets/images/emoji/tootha_thumb.gif", import.meta.url).href,
     },
     {
       title: "[哈哈]",
-      image: require("../assets/images/emoji/laugh.gif"),
+      image: new URL("../assets/images/emoji/laugh.gif", import.meta.url).href,
     },
     {
       title: "[可爱]",
-      image: require("../assets/images/emoji/tza_thumb.gif"),
+      image: new URL("../assets/images/emoji/tza_thumb.gif", import.meta.url).href,
     },
     {
       title: "[可怜]",
-      image: require("../assets/images/emoji/kl_thumb.gif"),
+      image: new URL("../assets/images/emoji/kl_thumb.gif", import.meta.url).href,
     },
     {
       title: "[挖鼻屎]",
-      image: require("../assets/images/emoji/kbsa_thumb.gif"),
+      image: new URL("../assets/images/emoji/kbsa_thumb.gif", import.meta.url).href,
     },
     {
       title: "[吃惊]",
-      image: require("../assets/images/emoji/cj_thumb.gif"),
+      image: new URL("../assets/images/emoji/cj_thumb.gif", import.meta.url).href,
     },
     {
       title: "[害羞]",
-      image: require("../assets/images/emoji/shamea_thumb.gif"),
+      image: new URL("../assets/images/emoji/shamea_thumb.gif", import.meta.url).href,
     },
     {
       title: "[挤眼]",
-      image: require("../assets/images/emoji/zy_thumb.gif"),
+      image: new URL("../assets/images/emoji/zy_thumb.gif", import.meta.url).href,
     },
     {
       title: "[闭嘴]",
-      image: require("../assets/images/emoji/bz_thumb.gif"),
+      image: new URL("../assets/images/emoji/bz_thumb.gif", import.meta.url).href,
     },
     {
       title: "[鄙视]",
-      image: require("../assets/images/emoji/bs2_thumb.gif"),
+      image: new URL("../assets/images/emoji/bs2_thumb.gif", import.meta.url).href,
     },
     {
       title: "[爱你]",
-      image: require("../assets/images/emoji/lovea_thumb.gif"),
+      image: new URL("../assets/images/emoji/lovea_thumb.gif", import.meta.url).href,
     },
     {
       title: "[泪]",
-      image: require("../assets/images/emoji/sada_thumb.gif"),
+      image: new URL("../assets/images/emoji/sada_thumb.gif", import.meta.url).href,
     },
     {
       title: "[偷笑]",
-      image: require("../assets/images/emoji/heia_thumb.gif"),
+      image: new URL("../assets/images/emoji/heia_thumb.gif", import.meta.url).href,
     },
     {
       title: "[亲亲]",
-      image: require("../assets/images/emoji/qq_thumb.gif"),
+      image: new URL("../assets/images/emoji/qq_thumb.gif", import.meta.url).href,
     },
     {
       title: "[生病]",
-      image: require("../assets/images/emoji/sb_thumb.gif"),
+      image: new URL("../assets/images/emoji/sb_thumb.gif", import.meta.url).href,
     },
     {
       title: "[太开心]",
-      image: require("../assets/images/emoji/mb_thumb.gif"),
+      image: new URL("../assets/images/emoji/mb_thumb.gif", import.meta.url).href,
     },
     {
       title: "[懒得理你]",
-      image: require("../assets/images/emoji/ldln_thumb.gif"),
+      image: new URL("../assets/images/emoji/ldln_thumb.gif", import.meta.url).href,
     },
     {
       title: "[右哼哼]",
-      image: require("../assets/images/emoji/yhh_thumb.gif"),
+      image: new URL("../assets/images/emoji/yhh_thumb.gif", import.meta.url).href,
     },
     {
       title: "[左哼哼]",
-      image: require("../assets/images/emoji/zhh_thumb.gif"),
+      image: new URL("../assets/images/emoji/zhh_thumb.gif", import.meta.url).href,
     },
     {
       title: "[嘘]",
-      image: require("../assets/images/emoji/x_thumb.gif"),
+      image: new URL("../assets/images/emoji/x_thumb.gif", import.meta.url).href,
     },
     {
       title: "[衰]",
-      image: require("../assets/images/emoji/cry.gif"),
+      image: new URL("../assets/images/emoji/cry.gif", import.meta.url).href,
     },
     {
       title: "[委屈]",
-      image: require("../assets/images/emoji/wq_thumb.gif"),
+      image: new URL("../assets/images/emoji/wq_thumb.gif", import.meta.url).href,
     },
     {
       title: "[吐]",
-      image: require("../assets/images/emoji/t_thumb.gif"),
+      image: new URL("../assets/images/emoji/t_thumb.gif", import.meta.url).href,
     },
     {
       title: "[打哈气]",
-      image: require("../assets/images/emoji/k_thumb.gif"),
+      image: new URL("../assets/images/emoji/k_thumb.gif", import.meta.url).href,
     },
     {
       title: "[抱抱]",
-      image: require("../assets/images/emoji/bba_thumb.gif"),
+      image: new URL("../assets/images/emoji/bba_thumb.gif", import.meta.url).href,
     },
     {
       title: "[怒]",
-      image: require("../assets/images/emoji/angrya_thumb.gif"),
+      image: new URL("../assets/images/emoji/angrya_thumb.gif", import.meta.url).href,
     },
     {
       title: "[疑问]",
-      image: require("../assets/images/emoji/yw_thumb.gif"),
+      image: new URL("../assets/images/emoji/yw_thumb.gif", import.meta.url).href,
     },
     {
       title: "[馋嘴]",
-      image: require("../assets/images/emoji/cza_thumb.gif"),
+      image: new URL("../assets/images/emoji/cza_thumb.gif", import.meta.url).href,
     },
     {
       title: "[拜拜]",
-      image: require("../assets/images/emoji/88_thumb.gif"),
+      image: new URL("../assets/images/emoji/88_thumb.gif", import.meta.url).href,
     },
     {
       title: "[思考]",
-      image: require("../assets/images/emoji/sk_thumb.gif"),
+      image: new URL("../assets/images/emoji/sk_thumb.gif", import.meta.url).href,
     },
     {
       title: "[汗]",
-      image: require("../assets/images/emoji/sweata_thumb.gif"),
+      image: new URL("../assets/images/emoji/sweata_thumb.gif", import.meta.url).href,
     },
     {
       title: "[困]",
-      image: require("../assets/images/emoji/sleepya_thumb.gif"),
+      image: new URL("../assets/images/emoji/sleepya_thumb.gif", import.meta.url).href,
     },
     {
       title: "[睡觉]",
-      image: require("../assets/images/emoji/sleepa_thumb.gif"),
+      image: new URL("../assets/images/emoji/sleepa_thumb.gif", import.meta.url).href,
     },
     {
       title: "[钱]",
-      image: require("../assets/images/emoji/money_thumb.gif"),
+      image: new URL("../assets/images/emoji/money_thumb.gif", import.meta.url).href,
     },
     {
       title: "[失望]",
-      image: require("../assets/images/emoji/sw_thumb.gif"),
+      image: new URL("../assets/images/emoji/sw_thumb.gif", import.meta.url).href,
     },
     {
       title: "[酷]",
-      image: require("../assets/images/emoji/cool_thumb.gif"),
+      image: new URL("../assets/images/emoji/cool_thumb.gif", import.meta.url).href,
     },
     {
       title: "[花心]",
-      image: require("../assets/images/emoji/hsa_thumb.gif"),
+      image: new URL("../assets/images/emoji/hsa_thumb.gif", import.meta.url).href,
     },
     {
       title: "[哼]",
-      image: require("../assets/images/emoji/hatea_thumb.gif"),
+      image: new URL("../assets/images/emoji/hatea_thumb.gif", import.meta.url).href,
     },
     {
       title: "[鼓掌]",
-      image: require("../assets/images/emoji/gza_thumb.gif"),
+      image: new URL("../assets/images/emoji/gza_thumb.gif", import.meta.url).href,
     },
     {
       title: "[晕]",
-      image: require("../assets/images/emoji/dizzya_thumb.gif"),
+      image: new URL("../assets/images/emoji/dizzya_thumb.gif", import.meta.url).href,
     },
     {
       title: "[悲伤]",
-      image: require("../assets/images/emoji/bs_thumb.gif"),
+      image: new URL("../assets/images/emoji/bs_thumb.gif", import.meta.url).href,
     }
   ];
 
