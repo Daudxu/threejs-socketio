@@ -5,7 +5,6 @@ import { A, D, DIRECTIONS, S, W } from '../../../utils/KeyDisplay'
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils'
 import * as TWEEN from '@tweenjs/tween.js'
 import gsap from 'gsap'
-// import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as CANNON from "cannon-es"
 import CannonDebugger from 'cannon-es-debugger'
@@ -361,6 +360,7 @@ export default class PlayerController {
 
     _this.setState(this.stateInt)
     _this.socketMessage()
+    _this.socketChatMessage()
     _this.socketRemovAvatar()
     _this.initCSS2DRenderer()
     
@@ -383,7 +383,7 @@ export default class PlayerController {
   initPlayer() {
     let model = SkeletonUtils.clone(this.player.scene)
     let modelVector3  = new THREE.Vector3(0, 1.0, 0)
-    model.scale.set(0.5, 0.5, 0.5)
+    // model.scale.set(0.5, 0.5, 0.5)
     model.position.set(0, -0.5, 0)
     const mixer = new THREE.AnimationMixer(model)
     // console.log('this.player.animations', this.player.animations)
@@ -412,11 +412,19 @@ export default class PlayerController {
     labelDiv.textContent = name;
     labelDiv.style.marginTop = '1em';
     const moonLabel = new CSS2DObject( labelDiv );
-    moonLabel.position.set( 0, 1, 0 );
-    // console.log(model.size())
+    moonLabel.position.set( 0, 2.0, 0 );
     model.add( moonLabel );
-    // this.scene.add(moonLabel)
-    console.log("========model======", model)
+    moonLabel.layers.set( 0 );
+  }
+
+  updateCreate2DObject(name, model){
+    const labelDiv = document.createElement( 'div' );
+    labelDiv.className = 'cl-label';
+    labelDiv.textContent = name;
+    labelDiv.style.marginTop = '1em';
+    const moonLabel = new CSS2DObject( labelDiv );
+    moonLabel.position.set( 0, 2.5, 0 );
+    model.add( moonLabel );
     moonLabel.layers.set( 0 );
   }
   initCSS2DRenderer(){
@@ -426,6 +434,7 @@ export default class PlayerController {
     labelRenderer.domElement.style.top = '0px';
     labelRenderer.domElement.style.color = '#ffffff';
     labelRenderer.domElement.style.fontWeight = '700';
+    labelRenderer.domElement.style.pointerEvents = 'none';
     document.body.appendChild( labelRenderer.domElement );
   }
 
@@ -577,6 +586,13 @@ export default class PlayerController {
     this.socket.on('removAvatar', (user) => {
       let model = this.scene.getObjectByName(user)
       this.scene.remove(model)
+      let avatarNameDom = document.getElementsByClassName("cl-label");
+      avatarNameDom = [].slice.call(avatarNameDom);
+      avatarNameDom.forEach(function(ele){
+        if(ele.innerHTML === user){
+          ele.remove()
+        }
+      })
     })
   }
   socketMessage() {
@@ -589,8 +605,6 @@ export default class PlayerController {
       if (message.id) {
         let model = this.scene.getObjectByName(message.id)
         if (model) {
-          model.scale.set(0.5, 0.5, 0.5)
-          // model.position.set(0, -2.5, 0)
           model.position.set(message.playerPosition.x, message.playerPosition.y - 0.5, message.playerPosition.z)
           if (message.playerQuaternion) {
             model.quaternion.set(message.playerQuaternion._x,message.playerQuaternion._y,message.playerQuaternion._z,message.playerQuaternion._w)
@@ -613,8 +627,10 @@ export default class PlayerController {
           // }
         } else {
           let model = SkeletonUtils.clone(this.player.scene)
-          model.scale.set(0.5, 0.5, 0.5)
+          // model.scale.set(0.5, 0.5, 0.5)
+          model.position.set(0, -0.5, 0)
           model.name = message.id
+
           // let mixer = new THREE.AnimationMixer(model)
           // walking = mixer.clipAction(this.player.animations[10])
           // idle = mixer.clipAction(this.player.animations[2])
@@ -628,8 +644,9 @@ export default class PlayerController {
           //   }
           // }
           // this.playerAnimationsArr.push(obj)
-          this.create2DObject(message.id, model, 'update')
+          this.updateCreate2DObject(message.id, model)
           this.scene.add(model)
+          // player.layers.enableAll();
           // mixers.push(mixer)
         }
       }
@@ -637,11 +654,11 @@ export default class PlayerController {
   }
 
    updateCameraTarget(moveX, moveZ) {
-    // move camera
+    // 相机移动
     this.camera.position.x += moveX
     this.camera.position.z += moveZ
   
-    // update camera target
+    // 更新轨道控制器
     this.cameraTarget.x = player.position.x
     this.cameraTarget.y = player.position.y + 1
     this.cameraTarget.z = player.position.z
@@ -719,6 +736,7 @@ export default class PlayerController {
 			}
 		}
 	}
+
   setOrientation(vector, instantly = false)
 	{
 		let lookVector = new THREE.Vector3().copy(vector).setY(0).normalize();
@@ -731,6 +749,52 @@ export default class PlayerController {
 			this.orientation.copy(lookVector);
 		}
 	}
+  // 对话框
+  socketChatMessage() {
+    this.socket.on('roomMessage', (userName, userMessage) => {
+      let model = this.scene.getObjectByName(userName) 
+      if (model) {
+        this.updateChatDialogs(userMessage, model)
+      }
+    })
+  }
+  // 更新的对话框
+  updateChatDialogs(userMessage, model){
+    var priodid = null
+    const labelDiv = document.createElement( 'div' );
+    labelDiv.className = 'cl-chat-label';
+    labelDiv.textContent = userMessage;
+    labelDiv.style.marginTop = '1em';
+    labelDiv.style.backgroundColor = 'rgba(0,0,0,0.2)';   
+    labelDiv.style.borderRadius = '18px';  
+    labelDiv.style.padding = '5px';  
+    const moonLabel = new CSS2DObject( labelDiv );
+    moonLabel.position.set( 0, 3.5, 0 );
+
+    model.children.forEach((item)=>{
+      if(item.isCSS2DObject === true && item.element.className === 'cl-chat-label'){
+        model.remove(item)
+      }
+    })
+    model.add( moonLabel );
+    if(priodid !== null) {
+      clearTimeout(priodid)
+    }
+    priodid =  setTimeout(() => {
+      model.remove(moonLabel)
+    }, 3000);
+    moonLabel.layers.set( 0 );
+  }
+  // initCSS2DRenderer(){
+  //   dialogsLabelRenderer = new CSS2DRenderer();
+  //   dialogsLabelRenderer.setSize( window.innerWidth, window.innerHeight );
+  //   dialogsLabelRenderer.domElement.style.position = 'absolute';
+  //   dialogsLabelRenderer.domElement.style.top = '0px';
+  //   dialogsLabelRenderer.domElement.style.color = '#ffffff';
+  //   dialogsLabelRenderer.domElement.style.fontWeight = '700';
+  //   dialogsLabelRenderer.domElement.style.pointerEvents = 'none';
+  //   dialogsLabelRenderer.body.appendChild( labelRenderer.domElement );
+  // }
   update=()=> {
     const delta = clock.getDelta();
     this.physics.step(1 / 60, delta);

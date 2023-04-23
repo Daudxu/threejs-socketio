@@ -230,7 +230,7 @@ onMounted(() => {
     playerCount.value = userList.length
     users.list = userList
   });
-  // 监听房间消息
+  // 监听房间消息 
   socket.on('roomMessage', function (userName, userMessage) {
     appendMsg(userName, userMessage)
   });
@@ -354,6 +354,7 @@ const initThree = (socket) => {
         .initialize(containerObj,config)
         .then((apiInstance) => {
           apiInstance.startRender();
+          console.log("apiInstance", apiInstance)
         })
         .catch();
     }
