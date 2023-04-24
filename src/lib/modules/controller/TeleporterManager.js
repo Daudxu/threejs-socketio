@@ -110,7 +110,7 @@ export default class TeleporterManager {
         // if(this.circleTexture){
             let teleporter = new Object3D()
             teleporter._type = 'TeleporterHelper'
-            teleporter.position.set(0, 2.9, 3.5)
+            teleporter.position.set(17.0, 2.9, 17.0)
             this.scene.add(teleporter)
             this.teleporters.push(teleporter)
             console.log("this.circleTexture", this.circleTexture)
