@@ -20,6 +20,7 @@ import * as Utils from '../../core/FunctionLibrary';
 import { TrimeshCollider } from '../../physics/TrimeshCollider.js';
 import { VectorSpringSimulator } from '../../physics/spring_simulation/VectorSpringSimulator';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import TeleporterManager from "./TeleporterManager"
 
 const GROUP1 = 1;
 const GROUP2 = 2;
@@ -121,6 +122,7 @@ export default class PlayerController {
     this.radius = 3;
     this.theta = 0;
     this.phi = 0;
+    this.teleporterManager = new TeleporterManager(this.scene)
     //控制方式
     this.stateInt = 0
 
@@ -471,6 +473,8 @@ export default class PlayerController {
 
     scene.add(plane)
     this.physics.addBody(this.characterCapsule.body)
+    this.teleporterManager.createTeleporter()
+
   }
 
    // front, back, left, right
@@ -883,7 +887,7 @@ export default class PlayerController {
   if(labelRenderer){
     labelRenderer.render( this.scene, this.camera );
   }
-
+  this.teleporterManager.update()
     //动画
     if (mixers) {
       for (const mixer of mixers) mixer.update(delta);

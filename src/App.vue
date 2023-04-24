@@ -125,17 +125,19 @@ connection.sdpConstraints.mandatory = {
 
 connection.onspeaking = function (e) {
     // e.streamid, e.userid, e.stream, etc.
-    console.log("=============================",e)
-    e.mediaElement.style.border = '1px solid red';
+    console.log("==============onspeaking===============",e)
+    // e.mediaElement.style.border = '1px solid red';
 };
 
 connection.onsilence = function (e) {
     // e.streamid, e.userid, e.stream, etc.
-    e.mediaElement.style.border = '';
+    // console.log("=========onsilence===========")
+    // e.mediaElement.style.border = '';
 };
 
 connection.onvolumechange = function(event) {
-    event.mediaElement.style.borderWidth = event.volume;
+  //  console.log("=========onvolumechange===========", event.volume)
+    // event.mediaElement.style.borderWidth = event.volume;
 };
 
 
@@ -155,13 +157,13 @@ const initHark = (args) => {
     speechEvents.on('speaking', function() {
         connection.onspeaking(streamedObject);
         isSpeaking.value = true
-        console.log("正在说话...")
+        // console.log("正在说话...")
     });
 
     speechEvents.on('stopped_speaking', function() {
         connection.onsilence(streamedObject);
         isSpeaking.value = false
-        console.log("停止了说话..")
+        // console.log("停止了说话..")
     });
 
     speechEvents.on('volume_change', function(volume, threshold) {
@@ -177,6 +179,7 @@ const isShowCreateAvatar = ref(true)
 const emojiIsShow = ref(false)
 
 let name = ref()
+let roomName = ref("")
 let isSpeaking = ref(false)
 let microphoneIsDisable = ref(true)
 let speakerIsDisable = ref(false)
@@ -248,8 +251,6 @@ connection.iceServers = [{
 }];
 connection.audiosContainer = document.getElementById('audios-container');
 connection.onstream = function(event) {
-    console.log("==================event===================", event)
-    console.log("connection.audiosContainer", connection.audiosContainer)
     var width = parseInt(connection.audiosContainer.clientWidth / 2) - 20;
     var mediaElement = getHTMLMediaElement(event.mediaElement, {
         title: event.userid,
@@ -260,12 +261,10 @@ connection.onstream = function(event) {
 
     connection.audiosContainer.appendChild(mediaElement);
     setTimeout(function() {
-        // console.log("===========")
         mediaElement.media.play();
     }, 3000);
     mediaElement.id = event.streamid;
 
-    console.log("====监听谁在说话====", )
     initHark({
         stream: event.stream,
         streamedObject: event,
@@ -274,11 +273,9 @@ connection.onstream = function(event) {
 };
 
 connection.onstreamended = function(event) {
-   console.log("=================event=================", event)
     var mediaElement = document.getElementById(event.streamid);
     if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement);
-        console.log("=================event=================", event)
     }  
 };
 
@@ -385,7 +382,7 @@ const handleClickIsInpt = (e) => {
 const handleClickEmj = () => {
   emojiIsShow.value = !emojiIsShow.value;
 }
-
+// 聊天消息
 const appendMsg = (userName, userMessage) => {
   let msgDom = `<span class="cl-sendName">${userName}:&nbsp;</span> <span class="cl-sendMsg">${userMessage} </span>`
   msgData.list.push(msgDom)
@@ -396,32 +393,33 @@ let isRoomExist
 
 // webRTC
 // 打开/关闭麦克风
-const handleClickMicrophone = () => {
+const handleClickMicrophone = async () => {
   if(microphoneIsDisable.value){
-    connection.openOrJoin("myroom", function(isRoomExist, roomid) {
-            console.log("=======================")
-            console.log("roomid:", roomid, "isRoomExist:", isRoomExist)
-            console.log("=======================")
-        if (!isRoomExist) {
-            // 不存在就处理不存在的逻辑
-        }
-    });
-    // connection.streams.stop('local-stream-id');
-    console.log("connection.userid", connection.userid)
-    microphoneIsDisable.value = false
+    if(roomName.value){
+      connection.attachStreams.forEach(function(stream) {
+        var track = stream.getAudioTracks()[0];
+        if (track)
+            track.enabled = true;
+      });
+      microphoneIsDisable.value = !microphoneIsDisable.value
+    }else{
+       connection.openOrJoin("myroom",(isRoomExist, roomid) =>{
+          roomName.value = roomid
+          microphoneIsDisable.value = !microphoneIsDisable.value
+      })
+    }
   }else{
-    navigator.mediaDevices.getUserMedia({ audio: false })
-    .then(stream => {
-      stream.getTracks().forEach(track => track.stop());
+    connection.attachStreams.forEach(function(stream) {
+      var track = stream.getAudioTracks()[0];
+      if (track)
+          track.enabled = false;
     });
-
-    // connection.streams.stop('local-stream-id');
-    microphoneIsDisable.value = true
+    microphoneIsDisable.value = !microphoneIsDisable.value
   }
 }
 
 // 打开/关闭扬声器
-const handleClickSpeaker = () => {
+const handleClickSpeaker = async () => {
   var localStream = connection.attachStreams[0];
   if(speakerIsDisable.value){
     localStream.unmute('both');
@@ -432,6 +430,25 @@ const handleClickSpeaker = () => {
   }
 }
 
+// 检查是否开启麦克风通道
+const checkIsOpenMicrophoneAccess = () => {
+return new Promise((resolve,reject) => {
+    navigator.permissions.query({name:'microphone'}).then(function(result) {
+      let isOpen = false;
+      if (result.state == 'granted') {
+        isOpen = true;
+        // console.log('1.Microphone access granted!');
+      } else if (result.state == 'prompt') {
+        isOpen = false;
+        // console.log('2.Prompt user to grant microphone access.');
+      } else if (result.state == 'denied') {
+        isOpen = false;
+        // console.log('3.Microphone access denied.');
+      }
+      resolve(isOpen)
+    }).catch(err => reject(err))
+  })
+}
 </script>
 
 <style lang="stylus">
