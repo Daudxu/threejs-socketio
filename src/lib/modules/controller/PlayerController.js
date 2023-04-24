@@ -767,7 +767,8 @@ export default class PlayerController {
     labelDiv.style.marginTop = '1em';
     labelDiv.style.backgroundColor = 'rgba(0,0,0,0.2)';   
     labelDiv.style.borderRadius = '18px';  
-    labelDiv.style.padding = '5px';  
+    labelDiv.style.padding = '10px';  
+    labelDiv.style.maxWidth = '320px';  
     const moonLabel = new CSS2DObject( labelDiv );
     moonLabel.position.set( 0, 3.5, 0 );
 
