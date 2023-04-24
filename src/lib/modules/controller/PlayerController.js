@@ -532,12 +532,12 @@ export default class PlayerController {
 
       const skyUniforms = sky.material.uniforms;
       skyUniforms['turbidity'].value = 10;
-      skyUniforms['rayleigh'].value = 2;
-      skyUniforms['mieCoefficient'].value = 0.005;
+      skyUniforms['rayleigh'].value = 0.3;
+      skyUniforms['mieCoefficient'].value = 0;
       skyUniforms['mieDirectionalG'].value = 0.8;
       
       const parameters = {
-        elevation: 2,
+        elevation: 15.5,
         azimuth: 180
       };
       // const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
