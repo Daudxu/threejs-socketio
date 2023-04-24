@@ -802,6 +802,7 @@ export default class PlayerController {
   // }
   update=()=> {
     const delta = clock.getDelta();
+    this.teleporterManager.update()
     this.physics.step(1 / 60, delta);
     this.characterCapsule.body.preStep = this.physicsPreStep(this.characterCapsule.body, this);
     this.characterCapsule.body.postStep = this.physicsPostStep(this.characterCapsule.body, this);
@@ -887,7 +888,7 @@ export default class PlayerController {
   if(labelRenderer){
     labelRenderer.render( this.scene, this.camera );
   }
-  this.teleporterManager.update()
+
     //动画
     if (mixers) {
       for (const mixer of mixers) mixer.update(delta);
