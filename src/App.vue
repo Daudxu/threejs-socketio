@@ -74,11 +74,11 @@
   <div class="cl-webrtc-control">
       <div class="cl-microphone bg-color control-btu"  @click="handleClickMicrophone()">
          <span class="icon iconfont icon-voice" v-show="microphoneIsDisable === false"></span>
-         <div class="cl-speaking" v-show="isSpeaking"></div>
          <span class="icon iconfont icon-microphone-off" v-show="microphoneIsDisable"></span>
       </div>
       <div class="cl-speaker bg-color control-btu" @click="handleClickSpeaker()">
         <span class="icon iconfont icon-volume-mute-outline" v-show="speakerIsDisable === false"></span>
+        <div class="cl-speaking" v-show="isSpeaking"></div>
         <span class="icon iconfont icon iconfont icon-mutemode" v-show="speakerIsDisable"></span>
       </div>
   </div>
@@ -136,7 +136,7 @@ connection.onsilence = function (e) {
 };
 
 connection.onvolumechange = function(event) {
-   console.log("=========onvolumechange===========", event)
+  //  console.log("=========onvolumechange===========", event)
     // event.mediaElement.style.borderWidth = event.volume;
 };
 
@@ -746,7 +746,8 @@ return new Promise((resolve,reject) => {
       }
       .cl-speaking {
         position: absolute
-        top: 17px
+        top: 22px
+        left: 42px;
         width: 10px;
         height: 15px;
         background: #1cee65
