@@ -14,10 +14,12 @@ const port = 3000;
 // 设置一个默认房间
 const roomName = "gameRome"
 var roomInfo = {};
+var userList = [];
 
 io.on('connection', async (socket) => {
     let total = io.engine.clientsCount;
     let user = '';
+  
     console.log('Server Connection Success ID', socket.id);
     logger.info(total);
     // 加入游戏房间
@@ -63,8 +65,29 @@ io.on('connection', async (socket) => {
             }
             io.to(roomName).emit('roomMessage', user, msg);
         }
-
     });
+    // 添加webrtc 用户键值对
+    socket.on('addVoiceUsers', function (msg) {
+        // 验证如果用户不在房间内则不给发送
+        if(user){
+            if (roomInfo[roomName].indexOf(user) === -1) {
+                return false;
+            }
+            let isTrue = false
+            userList.forEach((item, index)=>{
+                if(item.name === msg.name){
+                    userList[index].webrtcuid = msg.webrtcuid
+                    isTrue = true
+                }
+            })
+            if(!isTrue){
+                userList.push(msg)
+            }
+            console.log("userList", userList)
+        }
+    });
+
+    
 
     // socket 用户首次登录拉取房间所有用户角色数据(角色对象，位置信息，四元素)
     socket.on('roleBroadcasting', function (msg) {

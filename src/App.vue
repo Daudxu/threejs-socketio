@@ -136,7 +136,7 @@ connection.onsilence = function (e) {
 };
 
 connection.onvolumechange = function(event) {
-  //  console.log("=========onvolumechange===========", event.volume)
+   console.log("=========onvolumechange===========", event)
     // event.mediaElement.style.borderWidth = event.volume;
 };
 
@@ -150,7 +150,6 @@ const initHark = (args) => {
     var connection = args.connection;
     var streamedObject = args.streamedObject;
     var stream = args.stream;
-    console.log("streamedObject",streamedObject)
     var options = {};
     var speechEvents = hark(stream, options);
 
@@ -405,6 +404,7 @@ const handleClickMicrophone = async () => {
     }else{
        connection.openOrJoin("myroom",(isRoomExist, roomid) =>{
           roomName.value = roomid
+          socket.emit('addVoiceUsers', {'name': name.value, 'webrtcuid': connection.userid});
           microphoneIsDisable.value = !microphoneIsDisable.value
       })
     }
@@ -420,6 +420,7 @@ const handleClickMicrophone = async () => {
 
 // 打开/关闭扬声器
 const handleClickSpeaker = async () => {
+  // console.log(userarr.hasOwnProperty(0))
   var localStream = connection.attachStreams[0];
   if(speakerIsDisable.value){
     localStream.unmute('both');
