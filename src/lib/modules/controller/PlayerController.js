@@ -473,8 +473,12 @@ export default class PlayerController {
 
     scene.add(plane)
     this.physics.addBody(this.characterCapsule.body)
-    this.teleporterManager.createTeleporter()
-
+    let portalPosition1 = new THREE.Vector3(17.0, 2.9, 17.0),
+    portalPosition2 = new THREE.Vector3(-17.0, 2.9, -17.0),
+    portalPosition3 = new THREE.Vector3( 0, 2.9, 0);
+    this.teleporterManager.createTeleporter(portalPosition1)
+    this.teleporterManager.createTeleporter(portalPosition2)
+    this.teleporterManager.createTeleporter(portalPosition3)
   }
 
    // front, back, left, right

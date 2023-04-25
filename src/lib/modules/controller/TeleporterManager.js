@@ -11,22 +11,23 @@ import {
     AdditiveBlending,
     Points,
     Object3D,
-    Vector3
+    Vector3,
   } from 'three'
-import point1 from "../../../assets/images/point1.png"
-import point2 from "../../../assets/images/point2.png"
-import point3 from "../../../assets/images/point3.png"
-import point4 from "../../../assets/images/point4.png"
 import magic from "../../../assets/images/magic.png"
 import guangyun from "../../../assets/images/guangyun.png"
 export default class TeleporterManager {
+
+    pointTexturePath
+    pointTexture = []
+
     constructor(scene) {
-      this.init(scene)
-    }
-  
-    init(scene) {
+      this.pointTexturePath = [
+        './assets/images/point1.png',
+        './assets/images/point2.png',
+        './assets/images/point3.png',
+        './assets/images/point4.png'
+      ],
       this.scene = scene
-  
       this.params = {
         segment: 32,
         circleRadius: 1,
@@ -39,35 +40,22 @@ export default class TeleporterManager {
         pointMinSize: 0.04,
         pointMaxSize: 0.15,
         pointFloatSpeed: 0.01,
-        pointTexturePath: [
-            point1,
-            point2,
-            point3,
-            point4
-        ]
       }
-  
-      this.textureLoader = new TextureLoader()
-      this.circleTexturePath = './magic.png'
-      this.aroundTexturePath = guangyun
-      this.textureLoader.load(this.circleTexturePath, texture => {
-        this.circleTexture = texture
-      })
-      this.textureLoader.load(this.aroundTexturePath, texture => {
-        this.aroundTexture = texture
-      })
-      this.pointTexture = []
-      for (var i = 0; i < this.params.pointTexturePath.length; i++) {
-        this.textureLoader.load(this.params.pointTexturePath[i], texture => {
-          this.pointTexture.push(texture)
-        })
-      }
-  
+      this.pointTexture
+      this.position = new Vector3(17.0, 2.9, 17.0)
       this.circles = []
       this.arounds = []
       this.arounds2 = []
       this.particles = []
       this.teleporters = []
+      this.init()
+    }
+  
+    init() {
+      for (var i = 0; i < this.pointTexturePath.length; i++) {
+        let pointTexture = new TextureLoader().load(this.pointTexturePath[i]);
+          this.pointTexture.push(pointTexture)
+      }
     }
   
     update() {
@@ -106,52 +94,52 @@ export default class TeleporterManager {
     /**
      * 创建一个传送阵
      */
-    createTeleporter() {
-        // if(this.circleTexture){
-            let teleporter = new Object3D()
-            teleporter._type = 'TeleporterHelper'
-            teleporter.position.set(17.0, 2.9, 17.0)
-            this.scene.add(teleporter)
-            this.teleporters.push(teleporter)
-            console.log("this.circleTexture", this.circleTexture)
-            let circleGeo = new CircleBufferGeometry(this.params.circleRadius, this.params.segment)
-            let circleMat = new MeshBasicMaterial({
-                map: this.circleTexture,
-                transparent: true,
-                side: DoubleSide,
-                depthWrite: false
-            })
-            let circle = new Mesh(circleGeo, circleMat)
-            circle.rotateX(-Math.PI / 2)
-            this.circles.push(circle)
-            teleporter.add(circle)
-        
-            let aroundGeo = this.getCylinderGeo(this.params.aroundRadius, this.params.height)
-            let aroundMat = new MeshBasicMaterial({
-                map: this.aroundTexture,
-                transparent: true,
-                side: DoubleSide,
-                wireframe: false,
-                depthWrite: false
-            })
-            let around = new Mesh(aroundGeo, aroundMat)
-            this.arounds.push(around)
-            teleporter.add(around)
-        
-            let around2 = around.clone()
-            around2.userData.aroundScaleOffset = this.params.aroundScaleOffset
-            around2.userData._type = around2._type
-            teleporter.add(around2)
-            this.arounds2.push(around2)
-        
-            for (var j = 0; j < 10; j++) {
-                for (var i = 0; i < this.pointTexture.length; i++) {
-                let sprite = this.getPoints(this.params.pointRangeRadius, this.params.height, this.pointTexture[i])
-                this.particles.push(sprite)
-                teleporter.add(sprite)
-                }
-            }
-            // }
+    createTeleporter(position = this.position) {
+      let teleporter = new Object3D()
+      teleporter._type = 'TeleporterHelper'
+      teleporter.position.set(position.x,position.y,position.z)
+      this.scene.add(teleporter)
+      this.teleporters.push(teleporter)
+      let texture = new TextureLoader().load('./assets/images/magic.png');
+      let circleGeo = new CircleBufferGeometry(this.params.circleRadius, this.params.segment)
+      let circleMat = new MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          side: DoubleSide,
+          depthWrite: false
+      })
+      let circle = new Mesh(circleGeo, circleMat)
+      circle.rotateX(-Math.PI / 2)
+      this.circles.push(circle)
+      teleporter.add(circle)
+
+      let guangyunTexture = new TextureLoader().load('./assets/images/guangyun.png');
+      let aroundGeo = this.getCylinderGeo(this.params.aroundRadius, this.params.height)
+      let aroundMat = new MeshBasicMaterial({
+          // map: this.aroundTexture,
+          map: guangyunTexture,
+          transparent: true,
+          side: DoubleSide,
+          wireframe: false,
+          depthWrite: false
+      })
+      let around = new Mesh(aroundGeo, aroundMat)
+      this.arounds.push(around)
+      teleporter.add(around)
+  
+      let around2 = around.clone()
+      around2.userData.aroundScaleOffset = this.params.aroundScaleOffset
+      around2.userData._type = around2._type
+      teleporter.add(around2)
+      this.arounds2.push(around2)
+      // 传送阵萤火效果
+      for (var j = 0; j < 10; j++) {
+          for (var i = 0; i < this.pointTexture.length; i++) {
+          let sprite = this.getPoints(this.params.pointRangeRadius, this.params.height, this.pointTexture[i])
+          this.particles.push(sprite)
+          teleporter.add(sprite)
+          }
+      }
     }
   
     /**
@@ -267,7 +255,6 @@ export default class TeleporterManager {
             Math.random() * this.particles[i].userData.radius * 2 - this.particles[i].userData.radius
           this.particles[i].position.z =
             Math.random() * this.particles[i].userData.radius * 2 - this.particles[i].userData.radius
-  
           //随机上升速度
           this.particles[i].userData.floatSpeed = 0.001 + Math.random() * this.params.pointFloatSpeed
         }
