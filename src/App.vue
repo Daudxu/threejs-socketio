@@ -205,10 +205,12 @@ const onSwiper = (swiper) => {
    glbModelPath.value = roleList[0]
 } 
 const params = {}
+
 const onSlideChange = (e) => {
   let pageIndex = e.activeIndex;
   glbModelPath.value = roleList[pageIndex]
 }
+
 const handleClickCreateRandomName = () => {
     name.value = randomName()
 }
