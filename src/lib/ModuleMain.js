@@ -5,6 +5,7 @@ import {LoadResources} from './modules/loadResources/LoadResources'
 export default class ModuleMain extends BaseMain {
   constructor(container, config) {
     super(container)
+    console.log("container", container)
     this.domElement = this.render.renderer.domElement
     this.config = config
     this.init()
@@ -59,7 +60,6 @@ export default class ModuleMain extends BaseMain {
     this.controlRole?.update()
     // requestAnimationFrame
 
-    requestAnimationFrame(this.initAnimate); 
-
+     requestAnimationFrame(this.initAnimate); 
   }
 }
